@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -24,6 +25,16 @@ namespace FlatPiler
             // taOutput.Text += (Environment.NewLine + inputText);
             Lex lexer = new Lex(inputText, taOutput);
             lexer.analysis();
+
+            // taOutput.Text += (Environment.NewLine + Environment.NewLine + ((Token)lexer.tokens[1]).ToString());
+
+            // Creating this as it will be used in CST generation.
+            ArrayList tokens = new ArrayList(lexer.tokens);
+
+            if (lexer.errorCount == 0) {
+                Parse parser = new Parse(tokens, taOutput);
+                parser.parseProgram();
+            }
         }
 
         private void taInput_TextChanged(object sender, EventArgs e)

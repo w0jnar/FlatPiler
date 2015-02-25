@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Parse.cs" />
     <Compile Include="Lex.cs" />
     <Compile Include="FormFlatPiler.cs">
       <SubType>Form</SubType>

@@ -194,19 +194,19 @@ namespace FlatPiler
 
         private void matchBrace(char braceChar)
         {
-            if (braceChar.Equals("("))
+            if (braceChar.Equals('('))
             {
                 createToken(braceChar.ToString(), "left_paran");
             }
-            else if (braceChar.Equals(")"))
+            else if (braceChar.Equals(')'))
             {
                 createToken(braceChar.ToString(), "right_paran");
             }
-            else if (braceChar.Equals("{"))
+            else if (braceChar.Equals('{'))
             {
                 createToken(braceChar.ToString(), "left_brace");
             }
-            else if (braceChar.Equals("}"))
+            else if (braceChar.Equals('}'))
             {
                 createToken(braceChar.ToString(), "right_brace");
             }
