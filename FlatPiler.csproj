@@ -45,7 +45,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Lex.cs" />
-    <Compile Include="FormFlatPiler.cs" />
+    <Compile Include="FormFlatPiler.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FormFlatPiler.Designer.cs">
       <DependentUpon>FormFlatPiler.cs</DependentUpon>
     </Compile>
