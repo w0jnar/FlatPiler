@@ -12,6 +12,8 @@ namespace FlatPiler
     {
         private static Regex isDigit = new Regex("^[0-9]$");
         private static Regex isChar = new Regex("^[a-z]$");
+        private static Regex isBrace = new Regex("^[\\{\\}\\(\\)]$");
+        private static Regex isString = new Regex("\"[a-z ]*\"");
 
         public string inputString;
         public TextBox taOutput;
@@ -55,15 +57,24 @@ namespace FlatPiler
                             print("-id: " + currentChar.ToString());
                             this.tokens.Add(new Token(currentChar.ToString(), "id"));
                         }
+                        else if (isBrace.IsMatch(currentChar.ToString()))
+                        {
+                            matchBrace(currentChar);
+                        }
                         else if (isChar.IsMatch(currentChar.ToString()) && isChar.IsMatch(nextChar(i)))
                         {
                             matchKeyWord(i);
-                            if (this.tokens.Count > 0)
+                            if (this.tokens.Count > 0 && this.errorCount == 0)
                             {
                                 string lastTokenValue = ((Token)this.tokens[(this.tokens.Count - 1)]).value;
                                 i += lastTokenValue.Length - 1;
                                 print("-word: " + lastTokenValue);
                             }
+                        }
+                        else if (currentChar.ToString().Equals("\""))
+                        {
+                            int offset = matchString(i);
+                            i += offset - 1;
                         }
                     }
                     else
@@ -138,6 +149,47 @@ namespace FlatPiler
                 print("~~~Error: " + suspectKeyword + " is not valid");
                 this.errorCount++;
             }
+        }
+
+        private void matchBrace(char braceChar)
+        {
+            if (braceChar.Equals("("))
+            {
+                this.tokens.Add(new Token(braceChar.ToString(), "left_paran"));
+            }
+            else if (braceChar.Equals(")"))
+            {
+                this.tokens.Add(new Token(braceChar.ToString(), "right_paran"));
+            }
+            else if (braceChar.Equals("{"))
+            {
+                this.tokens.Add(new Token(braceChar.ToString(), "left_brace"));
+            }
+            else if (braceChar.Equals("}"))
+            {
+                this.tokens.Add(new Token(braceChar.ToString(), "right_brace"));
+            }
+            print("-brace: " + braceChar.ToString());
+        }
+
+        private int matchString(int index)
+        {
+            Match match = isString.Match(this.inputString.Substring(index));
+            // print("Match: " + match.Success);
+            // print(this.inputString.Substring(index));
+            int offset = 0;
+            if (match.Success)
+            {
+                string currentString = match.Value;
+                this.tokens.Add(new Token(currentString, "string"));
+                print("-string: " + currentString);
+                offset = currentString.Length;
+            }
+            else {
+                this.errorCount++;
+                print("~~~Error: End of Execution reached before string end.");
+            }
+            return offset;
         }
 
         private void print(string message)
