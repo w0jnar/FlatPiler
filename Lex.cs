@@ -121,6 +121,8 @@ namespace FlatPiler
                 if (this.errorCount == 0)
                 {
                     print("---Lex Finished Successfully. Nice!");
+
+                    // printTokens();
                 }
             }
         }
@@ -276,6 +278,14 @@ namespace FlatPiler
         private void createToken(string symbol, string name)
         {
             this.tokens.Add(new Token(symbol, name));
+        }
+
+        private void printTokens()
+        {
+            for (int i = 0; i < this.tokens.Count; i++)
+            {
+                print(((Token)this.tokens[i]).ToString());
+            }
         }
     }
     class Token
