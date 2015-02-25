@@ -45,5 +45,11 @@ namespace FlatPiler
         {
 
         }
+
+        private void btnClear_Click(object sender, EventArgs e)
+        {
+            taInput.Text = "";
+            taOutput.Text = "";
+        }
     }
 }

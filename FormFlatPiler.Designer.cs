@@ -33,10 +33,13 @@
             this.taOutput = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
+            this.btnClear = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // taInput
             // 
+            this.taInput.AcceptsReturn = true;
+            this.taInput.AcceptsTab = true;
             this.taInput.Location = new System.Drawing.Point(12, 35);
             this.taInput.Multiline = true;
             this.taInput.Name = "taInput";
@@ -58,9 +61,11 @@
             // 
             // taOutput
             // 
+            this.taOutput.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
             this.taOutput.Location = new System.Drawing.Point(384, 35);
             this.taOutput.Multiline = true;
             this.taOutput.Name = "taOutput";
+            this.taOutput.ReadOnly = true;
             this.taOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.taOutput.Size = new System.Drawing.Size(264, 334);
             this.taOutput.TabIndex = 2;
@@ -87,11 +92,23 @@
             this.label2.TabIndex = 4;
             this.label2.Text = "Output Area";
             // 
+            // btnClear
+            // 
+            this.btnClear.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnClear.Location = new System.Drawing.Point(12, 321);
+            this.btnClear.Name = "btnClear";
+            this.btnClear.Size = new System.Drawing.Size(205, 48);
+            this.btnClear.TabIndex = 5;
+            this.btnClear.Text = "Clear";
+            this.btnClear.UseVisualStyleBackColor = true;
+            this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
+            // 
             // FormFlatPiler
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(660, 381);
+            this.Controls.Add(this.btnClear);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.taOutput);
@@ -112,6 +129,7 @@
         private System.Windows.Forms.TextBox taOutput;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button btnClear;
     }
 }
 

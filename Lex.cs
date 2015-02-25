@@ -50,18 +50,18 @@ namespace FlatPiler
                         else if (isDigit.IsMatch(currentChar.ToString()))
                         {
                             print("-num: " + currentChar.ToString());
-                            this.tokens.Add(new Token(currentChar.ToString(), "digit"));
+                            createToken(currentChar.ToString(), "digit");
                         }
-                        else if (isChar.IsMatch(currentChar.ToString()) && !isChar.IsMatch(nextChar(i)))
+                        else if (isChar.IsMatch(currentChar.ToString()) && !isChar.IsMatch(getNextChar(i)))
                         {
                             print("-id: " + currentChar.ToString());
-                            this.tokens.Add(new Token(currentChar.ToString(), "id"));
+                            createToken(currentChar.ToString(), "id");
                         }
                         else if (isBrace.IsMatch(currentChar.ToString()))
                         {
                             matchBrace(currentChar);
                         }
-                        else if (isChar.IsMatch(currentChar.ToString()) && isChar.IsMatch(nextChar(i)))
+                        else if (isChar.IsMatch(currentChar.ToString()) && isChar.IsMatch(getNextChar(i)))
                         {
                             matchKeyWord(i);
                             if (this.tokens.Count > 0 && this.errorCount == 0)
@@ -76,6 +76,35 @@ namespace FlatPiler
                             int offset = matchString(i);
                             i += offset - 1;
                         }
+                        else if (currentChar.ToString().Equals("="))
+                        {
+                            int offset = matchEquals(i);
+                            i += offset;
+                        }
+                        else if (currentChar.ToString().Equals("!"))
+                        {
+                            int offset = matchNotEquals(i);
+                            i += offset;
+                        }
+                        else if (currentChar.ToString().Equals("+"))
+                        {
+                            print("-plus_op: +");
+                            createToken("+", "plus_op");
+                        }
+                        else if (currentChar.ToString().Equals("$"))
+                        {
+                            print("-eof: $");
+                            createToken("$", "end_of_file");
+                            if (i != this.inputString.Length - 1)
+                            {
+                                print("~~~Warning, there is code after the EOF character is reached.");
+                            }
+                        }
+                        else
+                        {
+                            this.errorCount++;
+                            print("~~~Error: " + currentChar.ToString() + "is not valid");
+                        }
                     }
                     else
                     {
@@ -83,10 +112,20 @@ namespace FlatPiler
                         i = this.inputString.Length;
                     }
                 }
+                if (!((Token)this.tokens[(this.tokens.Count - 1)]).type.Equals("end_of_file"))
+                {
+                    print("~~~Warning, end of file is reached before an EOF character, appending one now.");
+                    createToken("$", "end_of_file");
+                }
+
+                if (this.errorCount == 0)
+                {
+                    print("---Lex Finished Successfully. Nice!");
+                }
             }
         }
 
-        private string nextChar(int index)
+        private string getNextChar(int index)
         {
             char returnChar = ' ';
             if (index + 1 != this.inputString.Length)
@@ -114,35 +153,35 @@ namespace FlatPiler
             // this.tokens.Add(new Token(suspectKeyword, "meow"));
             if (suspectKeyword == "int")
             {
-                this.tokens.Add(new Token(suspectKeyword, "int"));
+                createToken(suspectKeyword, "int");
             }
             else if (suspectKeyword == "string")
             {
-                this.tokens.Add(new Token(suspectKeyword, "string"));
+                createToken(suspectKeyword, "string");
             }
             else if (suspectKeyword == "boolean")
             {
-                this.tokens.Add(new Token(suspectKeyword, "boolean"));
+                createToken(suspectKeyword, "boolean");
             }
             else if (suspectKeyword == "print")
             {
-                this.tokens.Add(new Token(suspectKeyword, "print"));
+                createToken(suspectKeyword, "print");
             }
             else if (suspectKeyword == "if")
             {
-                this.tokens.Add(new Token(suspectKeyword, "if"));
+                createToken(suspectKeyword, "if");
             }
             else if (suspectKeyword == "while")
             {
-                this.tokens.Add(new Token(suspectKeyword, "while"));
+                createToken(suspectKeyword, "while");
             }
             else if (suspectKeyword == "false")
             {
-                this.tokens.Add(new Token(suspectKeyword, "false"));
+                createToken(suspectKeyword, "false");
             }
             else if (suspectKeyword == "true")
             {
-                this.tokens.Add(new Token(suspectKeyword, "true"));
+                createToken(suspectKeyword, "true");
             }
             else
             {
@@ -155,19 +194,19 @@ namespace FlatPiler
         {
             if (braceChar.Equals("("))
             {
-                this.tokens.Add(new Token(braceChar.ToString(), "left_paran"));
+                createToken(braceChar.ToString(), "left_paran");
             }
             else if (braceChar.Equals(")"))
             {
-                this.tokens.Add(new Token(braceChar.ToString(), "right_paran"));
+                createToken(braceChar.ToString(), "right_paran");
             }
             else if (braceChar.Equals("{"))
             {
-                this.tokens.Add(new Token(braceChar.ToString(), "left_brace"));
+                createToken(braceChar.ToString(), "left_brace");
             }
             else if (braceChar.Equals("}"))
             {
-                this.tokens.Add(new Token(braceChar.ToString(), "right_brace"));
+                createToken(braceChar.ToString(), "right_brace");
             }
             print("-brace: " + braceChar.ToString());
         }
@@ -181,13 +220,50 @@ namespace FlatPiler
             if (match.Success)
             {
                 string currentString = match.Value;
-                this.tokens.Add(new Token(currentString, "string"));
+                createToken(currentString, "string");
                 print("-string: " + currentString);
                 offset = currentString.Length;
             }
-            else {
+            else
+            {
                 this.errorCount++;
                 print("~~~Error: End of Execution reached before string end.");
+            }
+            return offset;
+        }
+
+        private int matchEquals(int index)
+        {
+            string nextChar = getNextChar(index);
+            int offset = 0;
+            if (nextChar.Equals("="))
+            {
+                createToken("==", "boolop_equal");
+                print("-boolop_equal: ==");
+                offset++;
+            }
+            else
+            {
+                createToken("=", "assignment_op");
+                print("-assignment_op: =");
+            }
+            return offset;
+        }
+
+        private int matchNotEquals(int index)
+        {
+            string nextChar = getNextChar(index);
+            int offset = 0;
+            if (nextChar.Equals("="))
+            {
+                createToken("!=", "boolop_not_equal");
+                print("-boolop_not_equal: !=");
+                offset++;
+            }
+            else
+            {
+                this.errorCount++;
+                print("~~~Error: Invalid character after a !.");
             }
             return offset;
         }
@@ -195,6 +271,11 @@ namespace FlatPiler
         private void print(string message)
         {
             this.taOutput.Text += (Environment.NewLine + message);
+        }
+
+        private void createToken(string symbol, string name)
+        {
+            this.tokens.Add(new Token(symbol, name));
         }
     }
     class Token
