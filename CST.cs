@@ -116,7 +116,48 @@ namespace FlatPiler
             print("--Building Right Parenthesis Node.");
             Node rightParenNode = new Node(")");
             root.addChild(rightParenNode);
-            tokenIndex++;
+            this.tokenIndex++;
+        }
+
+        private void buildExprTree(Node root) {
+            print("--Building Expr Node.");
+            Token currentToken = (Token)this.tokens[this.tokenIndex];
+
+            if(currentToken.match("digit")) {
+                print("--Building IntExpr Node.");
+                Node intExprNode = new Node("IntExpr");
+                buildIntExprTree(intExprNode);
+                root.addChild(intExprNode);
+            }
+        }
+
+        private void buildIntExprTree(Node root) {
+            print("--Building Digit Node.");
+            Node digitNode = new Node("digit");
+            buildEndNode(digitNode);
+            root.addChild(digitNode);
+
+            Token currentToken = (Token)this.tokens[this.tokenIndex];
+            if (currentToken.match("plus_op")) {
+                print("--Building Int Op Node.");
+                print("--Building Plus Node.");
+
+                Node intOpNode = new Node("IntOp");
+                buildEndNode(intOpNode);
+                root.addChild(intOpNode);
+
+                print("--Building Digit Node.");
+                Node secondDigitNode = new Node("digit");
+                buildEndNode(secondDigitNode);
+                root.addChild(secondDigitNode);
+            }
+
+        }
+
+        private void buildEndNode(Node root) {
+            Token currentToken = (Token)this.tokens[this.tokenIndex++];
+            Node digitValueNode = new Node(currentToken.value);
+            root.addChild(digitValueNode);
         }
 
         private void print(string message)
