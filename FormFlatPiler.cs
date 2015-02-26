@@ -39,6 +39,9 @@ namespace FlatPiler
                 {
                     CST cst = new CST(tokens, taOutput);
                     cst.buildCST();
+
+                    AST ast = new AST(tokens, taOutput);
+                    ast.buildAST();
                 }
             }
         }

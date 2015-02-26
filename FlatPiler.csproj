@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AST.cs" />
     <Compile Include="Node.cs" />
     <Compile Include="CST.cs" />
     <Compile Include="Parse.cs" />

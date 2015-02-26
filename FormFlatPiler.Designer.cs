@@ -68,7 +68,7 @@
             this.taOutput.Name = "taOutput";
             this.taOutput.ReadOnly = true;
             this.taOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.taOutput.Size = new System.Drawing.Size(378, 334);
+            this.taOutput.Size = new System.Drawing.Size(428, 417);
             this.taOutput.TabIndex = 2;
             this.taOutput.TextChanged += new System.EventHandler(this.taOutput_TextChanged);
             // 
@@ -108,7 +108,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(660, 381);
+            this.ClientSize = new System.Drawing.Size(710, 464);
             this.Controls.Add(this.btnClear);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
