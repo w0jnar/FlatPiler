@@ -16,7 +16,7 @@ namespace FlatPiler
         private static Regex isString = new Regex("\"[a-z ]*\"");
 
         public string inputString;
-        public TextBox taOutput;
+        private TextBox taOutput;
         public ArrayList tokens = new ArrayList();
         public int errorCount = 0;
 
