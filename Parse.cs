@@ -85,28 +85,28 @@ namespace FlatPiler
                     this.wasSuccessful = match("right_brace");
                     if (this.wasSuccessful)
                     {
-                        print("-Finished Parsing Block");
+                        print("-Finished Parsing Block.");
                         returnValue = true;
 
                     }
                     else
                     {
                         this.errorCount++;
-                        print("~~~Error: program block improperly ended.");
+                        print("~~~Error: Program block improperly ended.");
                         returnValue = false;
                     }
                 }
                 else
                 {
                     this.errorCount++;
-                    print("~~~Error: program block improperly ended.");
+                    print("~~~Error: Program block improperly ended.");
                     returnValue = false;
                 }
             }
             else
             {
                 this.errorCount++;
-                print("~~~Error: program improperly ended.");
+                print("~~~Error: Program improperly ended.");
                 returnValue = false;
             }
 
@@ -123,12 +123,12 @@ namespace FlatPiler
                 if (this.wasSuccessful)
                 {
                     newTokenSetup();
-                    this.wasSuccessful = true; //work around, as otherwise, if everything went well, it would always return false.
+                    this.wasSuccessful = true;
                 }
                 else
                 {
                     this.errorCount++;
-                    print("~~~Error: statement improperly parsed");
+                    print("~~~Error: Statement improperly parsed.");
                     break;
                 }
             }
@@ -140,7 +140,7 @@ namespace FlatPiler
             }
             else
             {
-                print("~~~Parse ending due to Error(s)");
+                print("~~~Parse ending due to Error(s).");
                 returnValue = false;
             }
             return returnValue;
@@ -148,8 +148,126 @@ namespace FlatPiler
 
         private Boolean parseStatement()
         {
-            return true;
+            print("-Beginning Parse of a Statement.");
+            Boolean returnValue;
+            if (match("print"))
+            {
+                returnValue = parsePrintStatement();
+            }
+            else if (match("var_id"))
+            {
+                returnValue = parseAssignmentStatement();
+            }
+            else if (matchType())
+            {
+                returnValue = parseVarDecl();
+            }
+            else if (match("while"))
+            {
+                returnValue = parseWhileStatement();
+            }
+            else if (match("if"))
+            {
+                returnValue = parseIfStatement();
+            }
+            else if (match("left_brace"))
+            {
+                returnValue = parseBlock();
+            }
+            else
+            {
+                this.errorCount++;
+                print("~~~Error: Invalid statement, improper starting token.");
+                returnValue = false;
+            }
+            return returnValue;
         }
+
+        private Boolean parsePrintStatement()
+        {
+            Boolean returnValue;
+            newTokenSetup();
+            if (match("left_paren")) //left token of print statement
+            {
+                this.wasSuccessful = parseExpr();
+                if (this.wasSuccessful)
+                {
+                    newTokenSetup(); //check for the right token after parsing expr
+                    if (match("right_paren"))
+                    {
+                        print("Valid Print Statement Parsed.");
+                        returnValue = true;
+                    }
+                    else
+                    {
+                        this.errorCount++;
+                        print("~~~Error: Invalid print statement, right parenthesis expected, but not found.");
+                        returnValue = false;
+                    }
+                }
+                else
+                {
+                    this.errorCount++;
+                    print("~~~Error: Invalid print statement, expression not parsed properly.");
+                    returnValue = false;
+                }
+            }
+            else
+            {
+                this.errorCount++;
+                print("~~~Error: Invalid print statement, left parenthesis not found.");
+                returnValue = false;
+            }
+            return returnValue;
+        }
+
+        private Boolean parseAssignmentStatement()
+        {
+            Token tokenToAssignTo = this.currentToken;
+            newTokenSetup();
+            Boolean returnValue;
+            if (match("assignment_op"))
+            {
+                this.wasSuccessful = parseExpr();
+                if (this.wasSuccessful)
+                {
+                    print("Valid Assignment Statement parsed.");
+                    returnValue = true;
+                }
+                else
+                {
+                    this.errorCount++;
+                    print("~~~Error: Invalid assignment statement, invalid expression.");
+                    returnValue = false;
+                }
+            }
+            else
+            {
+                this.errorCount++;
+                print("~~~Error: Invalid assignment statement, assignment operator missing.");
+                returnValue = false;
+            }
+            return returnValue;
+        }
+
+        private Boolean parseVarDecl()
+        {
+            newTokenSetup();
+            Boolean returnValue;
+            if (match("var_id"))
+            {
+                print("Valid Variable Declaration Statement parsed.");
+                returnValue = true;
+            }
+            else
+            {
+                this.errorCount++;
+                print("~~~Error: Invalid variable declaration statement, invalid variable token.");
+                returnValue = false;
+            }
+            return returnValue;
+        }
+
 
         private Boolean parseId()
         {

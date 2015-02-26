@@ -229,7 +229,7 @@ namespace FlatPiler
             else
             {
                 this.errorCount++;
-                print("~~~Error: End of Execution reached before string end.");
+                print("~~~Error: End of execution reached before string end.");
             }
             return offset;
         }
