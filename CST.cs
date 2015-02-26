@@ -52,7 +52,7 @@ namespace FlatPiler
             root.addChild(leftBraceNode);
             this.tokenIndex++;
 
-            Node statementListNode = new Node("StatementList");
+            Node statementListNode = new Node("Statement List");
             buildStatementListTree(statementListNode);
             root.addChild(statementListNode);
 
@@ -72,7 +72,7 @@ namespace FlatPiler
                 buildStatementTree(statementNode);
                 root.addChild(statementNode);
 
-                Node statementListNode = new Node("StatementList");
+                Node statementListNode = new Node("Statement List");
                 buildStatementListTree(statementListNode);
                 root.addChild(statementListNode);
             }
@@ -94,12 +94,26 @@ namespace FlatPiler
                 buildPrintStatementTree(printStatementNode);
                 root.addChild(printStatementNode);
             }
+            else if(currentToken.match("var_id"))
+            {
+                print("--Building Assignment Statement Node.");
+                Node assignmentStatementNode = new Node("Assignment Statement");
+                buildAssignmentStatementTree(assignmentStatementNode);
+                root.addChild(assignmentStatementNode);
+            }
+            else if(currentToken.match("left_brace"))
+            {
+                print("--Building Block Node.");
+                Node blockNode = new Node("Block");
+                buildBlockTree(blockNode);
+                root.addChild(blockNode);
+            }
         }
 
         private void buildPrintStatementTree(Node root)
         {
             print("--Building Print Node.");
-            Node printNode = new Node("print");
+            Node printNode = new Node("Print");
             root.addChild(printNode);
             this.tokenIndex++;
 
@@ -119,6 +133,24 @@ namespace FlatPiler
             this.tokenIndex++;
         }
 
+        private void buildAssignmentStatementTree(Node root) 
+        {
+            print("--Building Id Node.");
+            Node idExprNode = new Node("Id");
+            buildIdTree(idExprNode);
+            root.addChild(idExprNode);
+
+            print("--Building Assignment Op Node.");
+            Node assignmentOpNode = new Node("Assignment Op");
+            buildEndNode(assignmentOpNode);
+            root.addChild(assignmentOpNode);
+
+            print("--Building Expr Node.");
+            Node exprNode = new Node("Expr");
+            buildExprTree(exprNode);
+            root.addChild(exprNode);
+        }
+
         private void buildExprTree(Node root)
         {
             print("--Building Expr Node.");
@@ -127,28 +159,28 @@ namespace FlatPiler
             if (currentToken.match("digit"))
             {
                 print("--Building IntExpr Node.");
-                Node intExprNode = new Node("IntExpr");
+                Node intExprNode = new Node("Int Expr");
                 buildIntExprTree(intExprNode);
                 root.addChild(intExprNode);
             }
             else if (currentToken.match("string"))
             {
                 print("--Building String Node.");
-                Node stringExprNode = new Node("StringExpr");
+                Node stringExprNode = new Node("String Expr");
                 buildStringExprTree(stringExprNode);
                 root.addChild(stringExprNode);
             }
-            else if (currentToken.match("var_id")) 
+            else if (currentToken.match("var_id"))
             {
                 print("--Building Id Node.");
                 Node idExprNode = new Node("Id");
                 buildIdTree(idExprNode);
                 root.addChild(idExprNode);
             }
-            else if (currentToken.match("left_paren") || currentToken.match("true") || currentToken.match("false")) 
+            else if (currentToken.match("left_paren") || currentToken.match("true") || currentToken.match("false"))
             {
                 print("--Building BooleanExpr Node.");
-                Node booleanExprNode = new Node("BooleanExpr");
+                Node booleanExprNode = new Node("Boolean Expr");
                 buildBooleanExprTree(booleanExprNode);
                 root.addChild(booleanExprNode);
             }
@@ -157,7 +189,7 @@ namespace FlatPiler
         private void buildIntExprTree(Node root)
         {
             print("--Building Digit Node.");
-            Node digitNode = new Node("digit");
+            Node digitNode = new Node("Digit");
             buildEndNode(digitNode);
             root.addChild(digitNode);
 
@@ -167,26 +199,26 @@ namespace FlatPiler
                 print("--Building Int Op Node.");
                 print("--Building Plus Node.");
 
-                Node intOpNode = new Node("IntOp");
+                Node intOpNode = new Node("Int Op");
                 buildEndNode(intOpNode);
                 root.addChild(intOpNode);
 
                 print("--Building Digit Node.");
-                Node secondDigitNode = new Node("digit");
+                Node secondDigitNode = new Node("Digit");
                 buildEndNode(secondDigitNode);
                 root.addChild(secondDigitNode);
             }
         }
 
-        private void buildStringExprTree(Node root) 
+        private void buildStringExprTree(Node root)
         {
             print("--Building CharList Node.");
-            Node charListNode = new Node("CharList");
+            Node charListNode = new Node("Char List");
             buildEndNode(charListNode);
             root.addChild(charListNode);
         }
 
-        private void buildIdTree(Node root) 
+        private void buildIdTree(Node root)
         {
             print("--Building Char Node.");
             Node charNode = new Node("Char");
@@ -194,7 +226,7 @@ namespace FlatPiler
             root.addChild(charNode);
         }
 
-        private void buildBooleanExprTree(Node root) 
+        private void buildBooleanExprTree(Node root)
         {
             Token currentToken = (Token)this.tokens[this.tokenIndex];
             if (currentToken.match("left_paren"))
@@ -214,13 +246,13 @@ namespace FlatPiler
                 {
                     print("--Building Boolean Operator Equal Node");
                 }
-                else {
+                else
+                {
                     print("--Building Boolean Operator Not Equal Node");
                 }
-                Node boolOpNode = new Node("BoolOp");
+                Node boolOpNode = new Node("Bool Op");
                 buildEndNode(boolOpNode);
                 root.addChild(boolOpNode);
-
 
                 print("--Building Expr Node.");
                 Node secondExprNode = new Node("Expr");
@@ -232,10 +264,10 @@ namespace FlatPiler
                 root.addChild(rightParenNode);
                 this.tokenIndex++;
             }
-            else 
+            else
             {
                 print("--Building BoolVal Node.");
-                Node boolValNode = new Node("BoolVal");
+                Node boolValNode = new Node("Bool Val");
                 buildEndNode(boolValNode);
                 root.addChild(boolValNode);
             }
