@@ -62,12 +62,13 @@
             // taOutput
             // 
             this.taOutput.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
-            this.taOutput.Location = new System.Drawing.Point(384, 35);
+            this.taOutput.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.taOutput.Location = new System.Drawing.Point(270, 35);
             this.taOutput.Multiline = true;
             this.taOutput.Name = "taOutput";
             this.taOutput.ReadOnly = true;
             this.taOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.taOutput.Size = new System.Drawing.Size(264, 334);
+            this.taOutput.Size = new System.Drawing.Size(378, 334);
             this.taOutput.TabIndex = 2;
             this.taOutput.TextChanged += new System.EventHandler(this.taOutput_TextChanged);
             // 
@@ -86,7 +87,7 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(380, 11);
+            this.label2.Location = new System.Drawing.Point(266, 11);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(111, 24);
             this.label2.TabIndex = 4;

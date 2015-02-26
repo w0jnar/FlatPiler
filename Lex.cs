@@ -55,7 +55,7 @@ namespace FlatPiler
                         else if (isChar.IsMatch(currentChar.ToString()) && !isChar.IsMatch(getNextChar(i)))
                         {
                             print("-id: " + currentChar.ToString());
-                            createToken(currentChar.ToString(), "id");
+                            createToken(currentChar.ToString(), "var_id");
                         }
                         else if (isBrace.IsMatch(currentChar.ToString()))
                         {
@@ -196,11 +196,11 @@ namespace FlatPiler
         {
             if (braceChar.Equals('('))
             {
-                createToken(braceChar.ToString(), "left_paran");
+                createToken(braceChar.ToString(), "left_paren");
             }
             else if (braceChar.Equals(')'))
             {
-                createToken(braceChar.ToString(), "right_paran");
+                createToken(braceChar.ToString(), "right_paren");
             }
             else if (braceChar.Equals('{'))
             {

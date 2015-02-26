@@ -187,12 +187,12 @@ namespace FlatPiler
         {
             Boolean returnValue;
             newTokenSetup();
-            if (match("left_paren")) //left token of print statement
+            if (match("left_paren"))
             {
                 this.wasSuccessful = parseExpr();
                 if (this.wasSuccessful)
                 {
-                    newTokenSetup(); //check for the right token after parsing expr
+                    newTokenSetup();
                     if (match("right_paren"))
                     {
                         print("Valid Print Statement Parsed.");
@@ -268,10 +268,177 @@ namespace FlatPiler
             return returnValue;
         }
 
+        private Boolean parseWhileStatement()
+        {
+            newTokenSetup();
+            this.wasSuccessful = parseBooleanExpr();
+            Boolean returnValue;
+            if (this.wasSuccessful)
+            {
+                newTokenSetup();
+                this.wasSuccessful = parseBlock();
+                if (this.wasSuccessful)
+                {
+                    print("Valid While Statement parsed.");
+                    returnValue = true;
+                }
+                else
+                {
+                    this.errorCount++;
+                    print("~~~Error: Invalid while statement, invalid block.");
+                    returnValue = false;
+                }
+            }
+            else
+            {
+                this.errorCount++;
+                print("~~~Error: Invalid while statement, invalid boolean expression.");
+                returnValue = false;
+            }
+            return returnValue;
+        }
+
+        private Boolean parseIfStatement()
+        {
+            newTokenSetup();
+            this.wasSuccessful = parseBooleanExpr();
+            Boolean returnValue;
+            if (this.wasSuccessful)
+            {
+                newTokenSetup();
+                this.wasSuccessful = parseBlock();
+                if (this.wasSuccessful)
+                {
+                    print("Valid If Statement parsed");
+                    returnValue = true;
+                }
+                else
+                {
+                    this.errorCount++;
+                    print("~~~Error Invalid if statement, invalid block.");
+                    returnValue = false;
+                }
+            }
+            else
+            {
+                this.errorCount++;
+                print("~~~Error: Invalid if statement, invalid boolean expression.");
+                returnValue = false;
+            }
+            return returnValue;
+        }
+
+        private Boolean parseExpr()
+        {
+            newTokenSetup();
+            Boolean returnValue;
+            if (match("digit"))
+            {
+                returnValue = parseIntExpr();
+            }
+            else if (match("string"))
+            {
+                returnValue = parseStringExpr();
+            }
+            else if (match("left_paren") || match("false") || match("true"))
+            {
+                returnValue = parseBooleanExpr();
+            }
+            else if (match("var_id"))
+            {
+                returnValue = parseId();
+            }
+            else
+            {
+                this.errorCount++;
+                print("~~~Error: Invalid expression.");
+                returnValue = false;
+            }
+            return returnValue;
+        }
+
+        private Boolean parseIntExpr()
+        {
+            this.currentToken = (Token)this.tokens[this.tokenIndex];
+            Boolean returnValue;
+            if (match("plus_op"))
+            {
+                print("-Parsing token: " + this.currentToken.ToString());
+                this.tokenIndex++;
+                returnValue = parseExpr();
+            }
+            else
+            {
+                returnValue = true;
+            }
+            return returnValue;
+        }
+
+        private Boolean parseBooleanExpr()
+        {
+            Boolean returnValue;
+            if (match("left_paren"))
+            {
+                this.wasSuccessful = parseExpr();
+                if (this.wasSuccessful)
+                {
+                    newTokenSetup();
+                    if (match("boolop_equal") || match("boolop_not_equal"))
+                    {
+                        this.wasSuccessful = parseExpr();
+                        if (this.wasSuccessful)
+                        {
+                            newTokenSetup();
+                            this.wasSuccessful = match("right_paren");
+                            if (this.wasSuccessful)
+                            {
+                                print("Valid Boolean Expression parsed.");
+                                returnValue = true;
+                            }
+                            else
+                            {
+                                this.errorCount++;
+                                print("~~~Error: Invalid boolean expression, right parenthesis not found.");
+                                returnValue = false;
+                            }
+                        }
+                        else
+                        {
+                            this.errorCount++;
+                            print("~~~Error: Invalid boolean expression, invalid token.");
+                            returnValue = false;
+                        }
+                    }
+                    else
+                    {
+                        this.errorCount++;
+                        print("~~~Error: Invalid boolean expression, invalid boolean operator.");
+                        returnValue = false;
+                    }
+                }
+                else
+                {
+                    this.errorCount++;
+                    print("~~~Error: Invalid boolean expression, invalid token.");
+                    returnValue = false;
+                }
+            }
+            else if (match("true") || match("false"))
+            {
+                returnValue = true;
+            }
+            else
+            {
+                this.errorCount++;
+                print("~~~Error Invalid boolean expression, invalid token.");
+                returnValue = false;
+            }
+            return returnValue;
+        }
 
         private Boolean parseId()
         {
-            return match("id");
+            return match("var_id");
         }
 
         private Boolean parseStringExpr()
