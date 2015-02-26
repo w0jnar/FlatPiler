@@ -28,7 +28,7 @@ namespace FlatPiler
 
         public void analysis()
         {
-            this.taOutput.Text += (Environment.NewLine + this.inputString);
+            // this.taOutput.Text += (Environment.NewLine + this.inputString);
             if (this.inputString.Length == 0)
             {
                 this.errorCount++;

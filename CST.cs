@@ -42,7 +42,7 @@ namespace FlatPiler
             print("--Building End of File Node.");
             Node eofNode = new Node("$");
             root.addChild(eofNode);
-            tokenIndex++;
+            this.tokenIndex++;
         }
 
         private void buildBlockTree(Node root)
@@ -50,7 +50,7 @@ namespace FlatPiler
             print("--Building Left Bracket Node.");
             Node leftBraceNode = new Node("{");
             root.addChild(leftBraceNode);
-            tokenIndex++;
+            this.tokenIndex++;
 
             Node statementListNode = new Node("StatementList");
             buildStatementListTree(statementListNode);
@@ -59,7 +59,7 @@ namespace FlatPiler
             print("--Building Right Bracket Node.");
             Node rightBraceNode = new Node("}");
             root.addChild(rightBraceNode);
-            tokenIndex++;
+            this.tokenIndex++;
         }
 
         private void buildStatementListTree(Node root)
@@ -96,17 +96,17 @@ namespace FlatPiler
             }
         }
 
-        private void buildPrintStatementTree(Node root) 
+        private void buildPrintStatementTree(Node root)
         {
             print("--Building Print Node.");
             Node printNode = new Node("print");
             root.addChild(printNode);
-            tokenIndex++;
+            this.tokenIndex++;
 
             print("--Building Left Parenthesis Node.");
             Node leftParenNode = new Node("(");
             root.addChild(leftParenNode);
-            tokenIndex++;
+            this.tokenIndex++;
 
             print("--Building Expr Node.");
             Node exprNode = new Node("Expr");
@@ -119,26 +119,51 @@ namespace FlatPiler
             this.tokenIndex++;
         }
 
-        private void buildExprTree(Node root) {
+        private void buildExprTree(Node root)
+        {
             print("--Building Expr Node.");
             Token currentToken = (Token)this.tokens[this.tokenIndex];
 
-            if(currentToken.match("digit")) {
+            if (currentToken.match("digit"))
+            {
                 print("--Building IntExpr Node.");
                 Node intExprNode = new Node("IntExpr");
                 buildIntExprTree(intExprNode);
                 root.addChild(intExprNode);
             }
+            else if (currentToken.match("string"))
+            {
+                print("--Building String Node.");
+                Node stringExprNode = new Node("StringExpr");
+                buildStringExprTree(stringExprNode);
+                root.addChild(stringExprNode);
+            }
+            else if (currentToken.match("var_id")) 
+            {
+                print("--Building Id Node.");
+                Node idExprNode = new Node("Id");
+                buildIdTree(idExprNode);
+                root.addChild(idExprNode);
+            }
+            else if (currentToken.match("left_paren") || currentToken.match("true") || currentToken.match("false")) 
+            {
+                print("--Building BooleanExpr Node.");
+                Node booleanExprNode = new Node("BooleanExpr");
+                buildBooleanExprTree(booleanExprNode);
+                root.addChild(booleanExprNode);
+            }
         }
 
-        private void buildIntExprTree(Node root) {
+        private void buildIntExprTree(Node root)
+        {
             print("--Building Digit Node.");
             Node digitNode = new Node("digit");
             buildEndNode(digitNode);
             root.addChild(digitNode);
 
             Token currentToken = (Token)this.tokens[this.tokenIndex];
-            if (currentToken.match("plus_op")) {
+            if (currentToken.match("plus_op"))
+            {
                 print("--Building Int Op Node.");
                 print("--Building Plus Node.");
 
@@ -151,10 +176,73 @@ namespace FlatPiler
                 buildEndNode(secondDigitNode);
                 root.addChild(secondDigitNode);
             }
-
         }
 
-        private void buildEndNode(Node root) {
+        private void buildStringExprTree(Node root) 
+        {
+            print("--Building CharList Node.");
+            Node charListNode = new Node("CharList");
+            buildEndNode(charListNode);
+            root.addChild(charListNode);
+        }
+
+        private void buildIdTree(Node root) 
+        {
+            print("--Building Char Node.");
+            Node charNode = new Node("Char");
+            buildEndNode(charNode);
+            root.addChild(charNode);
+        }
+
+        private void buildBooleanExprTree(Node root) 
+        {
+            Token currentToken = (Token)this.tokens[this.tokenIndex];
+            if (currentToken.match("left_paren"))
+            {
+                print("--Building Left Parenthesis Node.");
+                Node leftParenNode = new Node("(");
+                root.addChild(leftParenNode);
+                this.tokenIndex++;
+
+                print("--Building Expr Node.");
+                Node exprNode = new Node("Expr");
+                buildExprTree(exprNode);
+                root.addChild(exprNode);
+
+                currentToken = (Token)this.tokens[this.tokenIndex];
+                if (currentToken.match("boolop_equal"))
+                {
+                    print("--Building Boolean Operator Equal Node");
+                }
+                else {
+                    print("--Building Boolean Operator Not Equal Node");
+                }
+                Node boolOpNode = new Node("BoolOp");
+                buildEndNode(boolOpNode);
+                root.addChild(boolOpNode);
+
+
+                print("--Building Expr Node.");
+                Node secondExprNode = new Node("Expr");
+                buildExprTree(secondExprNode);
+                root.addChild(secondExprNode);
+
+                print("--Building Right Parenthesis Node.");
+                Node rightParenNode = new Node(")");
+                root.addChild(rightParenNode);
+                this.tokenIndex++;
+            }
+            else 
+            {
+                print("--Building BoolVal Node.");
+                Node boolValNode = new Node("BoolVal");
+                buildEndNode(boolValNode);
+                root.addChild(boolValNode);
+            }
+        }
+
+        private void buildEndNode(Node root)
+        {
             Token currentToken = (Token)this.tokens[this.tokenIndex++];
             Node digitValueNode = new Node(currentToken.value);
             root.addChild(digitValueNode);
