@@ -300,6 +300,11 @@ namespace FlatPiler
             this.value = token;
         }
 
+        public Boolean match(string type)
+        {
+            return this.type.Equals(type);
+        }
+
         public override string ToString()
         {
             return "Type: " + this.type + " Value: " + this.value;

@@ -66,7 +66,7 @@ namespace FlatPiler
         {
             print("--Building StatementList Node.");
             Token currentToken = (Token)this.tokens[this.tokenIndex];
-            if (!currentToken.type.Equals("right_brace"))
+            if (!currentToken.match("right_brace"))
             {
                 Node statementNode = new Node("Statement");
                 buildStatementTree(statementNode);
@@ -76,17 +76,21 @@ namespace FlatPiler
                 buildStatementListTree(statementListNode);
                 root.addChild(statementListNode);
             }
-            else 
-            { 
+            else
+            {
                 Node epsilonNode = new Node("ε");
                 root.addChild(epsilonNode);
             }
         }
 
-        private void buildStatementTree(Node root) 
+        private void buildStatementTree(Node root)
         {
             print("--Building Statement Node.");
             Token currentToken = (Token)this.tokens[this.tokenIndex];
+            if (currentToken.match("print"))
+            {
+
+            }
         }
 
         private void print(string message)

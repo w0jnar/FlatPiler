@@ -54,7 +54,7 @@ namespace FlatPiler
             if (this.wasSuccessful)
             {
                 newTokenSetup();
-                this.wasSuccessful = match("end_of_file");
+                this.wasSuccessful = this.currentToken.match("end_of_file");
                 if (this.wasSuccessful)
                 {
                     print("-Program parsing ended.");
@@ -73,7 +73,7 @@ namespace FlatPiler
         {
             Boolean returnValue;
 
-            this.wasSuccessful = match("left_brace");
+            this.wasSuccessful = this.currentToken.match("left_brace");
             if (this.wasSuccessful)
             {
                 print("-Parsing Block");
@@ -81,7 +81,7 @@ namespace FlatPiler
                 this.wasSuccessful = parseStatementList();
                 if (this.wasSuccessful)
                 {
-                    this.wasSuccessful = match("right_brace");
+                    this.wasSuccessful = this.currentToken.match("right_brace");
                     if (this.wasSuccessful)
                     {
                         print("-Finished Parsing Block.");
@@ -116,7 +116,7 @@ namespace FlatPiler
         {
             newTokenSetup();
             this.wasSuccessful = true;
-            while (!match("right_brace") || this.errorCount != 0)
+            while (!this.currentToken.match("right_brace") || this.errorCount != 0)
             {
                 this.wasSuccessful = parseStatement();
                 if (this.wasSuccessful)
@@ -149,11 +149,11 @@ namespace FlatPiler
         {
             print("-Beginning Parse of a Statement.");
             Boolean returnValue;
-            if (match("print"))
+            if (this.currentToken.match("print"))
             {
                 returnValue = parsePrintStatement();
             }
-            else if (match("var_id"))
+            else if (this.currentToken.match("var_id"))
             {
                 returnValue = parseAssignmentStatement();
             }
@@ -161,15 +161,15 @@ namespace FlatPiler
             {
                 returnValue = parseVarDecl();
             }
-            else if (match("while"))
+            else if (this.currentToken.match("while"))
             {
                 returnValue = parseWhileStatement();
             }
-            else if (match("if"))
+            else if (this.currentToken.match("if"))
             {
                 returnValue = parseIfStatement();
             }
-            else if (match("left_brace"))
+            else if (this.currentToken.match("left_brace"))
             {
                 returnValue = parseBlock();
             }
@@ -186,13 +186,13 @@ namespace FlatPiler
         {
             Boolean returnValue;
             newTokenSetup();
-            if (match("left_paren"))
+            if (this.currentToken.match("left_paren"))
             {
                 this.wasSuccessful = parseExpr();
                 if (this.wasSuccessful)
                 {
                     newTokenSetup();
-                    if (match("right_paren"))
+                    if (this.currentToken.match("right_paren"))
                     {
                         print("Valid Print Statement Parsed.");
                         returnValue = true;
@@ -225,7 +225,7 @@ namespace FlatPiler
             Token tokenToAssignTo = this.currentToken;
             newTokenSetup();
             Boolean returnValue;
-            if (match("assignment_op"))
+            if (this.currentToken.match("assignment_op"))
             {
                 this.wasSuccessful = parseExpr();
                 if (this.wasSuccessful)
@@ -253,7 +253,7 @@ namespace FlatPiler
         {
             newTokenSetup();
             Boolean returnValue;
-            if (match("var_id"))
+            if (this.currentToken.match("var_id"))
             {
                 print("Valid Variable Declaration Statement parsed.");
                 returnValue = true;
@@ -331,19 +331,19 @@ namespace FlatPiler
         {
             newTokenSetup();
             Boolean returnValue;
-            if (match("digit"))
+            if (this.currentToken.match("digit"))
             {
                 returnValue = parseIntExpr();
             }
-            else if (match("string"))
+            else if (this.currentToken.match("string"))
             {
                 returnValue = parseStringExpr();
             }
-            else if (match("left_paren") || match("false") || match("true"))
+            else if (this.currentToken.match("left_paren") || this.currentToken.match("false") || this.currentToken.match("true"))
             {
                 returnValue = parseBooleanExpr();
             }
-            else if (match("var_id"))
+            else if (this.currentToken.match("var_id"))
             {
                 returnValue = parseId();
             }
@@ -360,7 +360,7 @@ namespace FlatPiler
         {
             this.currentToken = (Token)this.tokens[this.tokenIndex];
             Boolean returnValue;
-            if (match("plus_op"))
+            if (this.currentToken.match("plus_op"))
             {
                 print("-Parsing token: " + this.currentToken.ToString());
                 this.tokenIndex++;
@@ -376,19 +376,19 @@ namespace FlatPiler
         private Boolean parseBooleanExpr()
         {
             Boolean returnValue;
-            if (match("left_paren"))
+            if (this.currentToken.match("left_paren"))
             {
                 this.wasSuccessful = parseExpr();
                 if (this.wasSuccessful)
                 {
                     newTokenSetup();
-                    if (match("boolop_equal") || match("boolop_not_equal"))
+                    if (this.currentToken.match("boolop_equal") || this.currentToken.match("boolop_not_equal"))
                     {
                         this.wasSuccessful = parseExpr();
                         if (this.wasSuccessful)
                         {
                             newTokenSetup();
-                            this.wasSuccessful = match("right_paren");
+                            this.wasSuccessful = this.currentToken.match("right_paren");
                             if (this.wasSuccessful)
                             {
                                 print("Valid Boolean Expression parsed.");
@@ -422,7 +422,7 @@ namespace FlatPiler
                     returnValue = false;
                 }
             }
-            else if (match("true") || match("false"))
+            else if (this.currentToken.match("true") || this.currentToken.match("false"))
             {
                 returnValue = true;
             }
@@ -437,20 +437,15 @@ namespace FlatPiler
 
         private Boolean parseId()
         {
-            return match("var_id");
+            return this.currentToken.match("var_id");
         }
 
         private Boolean parseStringExpr()
         {
-            return match("string");
+            return this.currentToken.match("string");
         }
 
         // Helpers
-        private Boolean match(string type)
-        {
-            return this.currentToken.type.Equals(type);
-        }
-
         private Boolean matchType()
         {
             return ((this.currentToken.type.Equals("int")) || (this.currentToken.type.Equals("string")) || (this.currentToken.type.Equals("boolean")));
