@@ -31,6 +31,7 @@ namespace FlatPiler
             this.taOutput.Text += (Environment.NewLine + this.inputString);
             if (this.inputString.Length == 0)
             {
+                this.errorCount++;
                 print("~~~Error, this program is empty.");
             }
             else

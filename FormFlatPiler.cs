@@ -31,9 +31,15 @@ namespace FlatPiler
             // Creating this as it will be used in CST generation.
             ArrayList tokens = new ArrayList(lexer.tokens);
 
-            if (lexer.errorCount == 0) {
+            if (lexer.errorCount == 0)
+            {
                 Parse parser = new Parse(tokens, taOutput);
                 parser.parseProgram();
+                if (parser.errorCount == 0)
+                {
+                    CST cst = new CST(tokens, taOutput);
+                    cst.buildCST();
+                }
             }
         }
 
