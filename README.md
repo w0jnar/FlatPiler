@@ -13,6 +13,6 @@ Grammar is here: http://www.labouseur.com/courses/compilers/grammar.pdf
                 
                 -Might do unlimited code gen (also have not crossed that bridge yet).
 
-Written in C#, with a basis CATpiler, this compiler is primarily just for my sake, 
+Written in C#, with a basis of CATpiler, this compiler is primarily just for my sake, 
 as an exporation of C#, and to gain more experience with the language, as I felt I did 
 not have enough experience with the Syntax.
