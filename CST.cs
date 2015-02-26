@@ -89,8 +89,34 @@ namespace FlatPiler
             Token currentToken = (Token)this.tokens[this.tokenIndex];
             if (currentToken.match("print"))
             {
-
+                print("--Building Print Statement Node.");
+                Node printStatementNode = new Node("Print Statement");
+                buildPrintStatementTree(printStatementNode);
+                root.addChild(printStatementNode);
             }
+        }
+
+        private void buildPrintStatementTree(Node root) 
+        {
+            print("--Building Print Node.");
+            Node printNode = new Node("print");
+            root.addChild(printNode);
+            tokenIndex++;
+
+            print("--Building Left Parenthesis Node.");
+            Node leftParenNode = new Node("(");
+            root.addChild(leftParenNode);
+            tokenIndex++;
+
+            print("--Building Expr Node.");
+            Node exprNode = new Node("Expr");
+            buildExprTree(exprNode);
+            root.addChild(exprNode);
+
+            print("--Building Right Parenthesis Node.");
+            Node rightParenNode = new Node(")");
+            root.addChild(rightParenNode);
+            tokenIndex++;
         }
 
         private void print(string message)
