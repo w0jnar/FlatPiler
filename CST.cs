@@ -101,6 +101,14 @@ namespace FlatPiler
                 buildAssignmentStatementTree(assignmentStatementNode);
                 root.addChild(assignmentStatementNode);
             }
+            else if (currentToken.match("int") || currentToken.match("string") || currentToken.match("boolean")) 
+            {
+                print("--Building Variable Declaration Statement Node.");
+                Node varDeclNode = new Node("Variable Declaration Statement");
+                buildVarDeclStatementTree(varDeclNode);
+                root.addChild(varDeclNode);
+
+            }
             else if (currentToken.match("while"))
             {
                 print("--Building While Node");
@@ -115,7 +123,7 @@ namespace FlatPiler
                 buildWhileIfStatementTree(ifStatementNode);
                 root.addChild(ifStatementNode);
             }
-            else if(currentToken.match("left_brace"))
+            else if (currentToken.match("left_brace"))
             {
                 print("--Building Block Node.");
                 Node blockNode = new Node("Block");
@@ -163,6 +171,17 @@ namespace FlatPiler
             Node exprNode = new Node("Expr");
             buildExprTree(exprNode);
             root.addChild(exprNode);
+        }
+
+        private void buildVarDeclStatementTree(Node root) 
+        {
+            print("--Building Type Node.");
+            buildEndNode(root);
+
+            print("--Building Id Node.");
+            Node idExprNode = new Node("Id");
+            buildIdTree(idExprNode);
+            root.addChild(idExprNode);
         }
 
         private void buildWhileIfStatementTree(Node root) 
