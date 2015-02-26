@@ -28,7 +28,7 @@ namespace FlatPiler
             this.root = new Node("Program");
             buildProgramTree(this.root);
             // print(this.root.children[0].name);
-            print("~~~Ending CST Building.");
+            print("~~~Ending CST Building." + Environment.NewLine + Environment.NewLine);
             this.root.PrintPretty("", true, taOutput);
         }
 
@@ -101,6 +101,20 @@ namespace FlatPiler
                 buildAssignmentStatementTree(assignmentStatementNode);
                 root.addChild(assignmentStatementNode);
             }
+            else if (currentToken.match("while"))
+            {
+                print("--Building While Node");
+                Node whileStatementNode = new Node("While Statement");
+                buildWhileIfStatementTree(whileStatementNode);
+                root.addChild(whileStatementNode);
+            }
+            else if (currentToken.match("if"))
+            {
+                print("--Building If Node");
+                Node ifStatementNode = new Node("If Statement");
+                buildWhileIfStatementTree(ifStatementNode);
+                root.addChild(ifStatementNode);
+            }
             else if(currentToken.match("left_brace"))
             {
                 print("--Building Block Node.");
@@ -149,6 +163,23 @@ namespace FlatPiler
             Node exprNode = new Node("Expr");
             buildExprTree(exprNode);
             root.addChild(exprNode);
+        }
+
+        private void buildWhileIfStatementTree(Node root) 
+        {
+            Token currentToken = (Token)this.tokens[this.tokenIndex++];
+            Node whileIfNode = new Node(currentToken.value);
+            root.addChild(whileIfNode);
+
+            print("--Building BooleanExpr Node.");
+            Node booleanExprNode = new Node("Boolean Expr");
+            buildBooleanExprTree(booleanExprNode);
+            root.addChild(booleanExprNode);
+
+            print("--Building Block Node.");
+            Node blockNode = new Node("Block");
+            buildBlockTree(blockNode);
+            root.addChild(blockNode);
         }
 
         private void buildExprTree(Node root)
