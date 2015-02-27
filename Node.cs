@@ -29,12 +29,12 @@ namespace FlatPiler
             ta.Text += indent;
             if (last)
             {
-                ta.Text += "\\-";
+                ta.Text += "\\:";
                 indent += "  ";
             }
             else
             {
-                ta.Text += "|-";
+                ta.Text += "|:";
                 indent += "| ";
             }
             ta.Text += (this.name + Environment.NewLine);

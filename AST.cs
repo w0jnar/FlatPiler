@@ -72,6 +72,55 @@ namespace FlatPiler
                 root.addChild(printNode);
                 // Console.Write(((Token)this.tokens[this.tokenIndex]).value);
             }
+            else if (currentToken.match("var_id"))
+            {
+                print("--Building Assignment Node.");
+                Node assignmentNode = new Node("Assignment");
+                buildAssignmentStatementTree(assignmentNode);
+                root.addChild(assignmentNode);
+            }
+            else if (currentToken.match("int") || currentToken.match("string") || currentToken.match("boolean")) 
+            {
+                print("--Building Variable Declaration Node.");
+                Node varDeclNode = new Node("Variable Declaration");
+                buildVarDeclTree(varDeclNode);
+                root.addChild(varDeclNode);
+            }
+            else if (currentToken.match("while"))
+            {
+                print("--Building While Node.");
+                Node whileNode = new Node("While");
+                // Skip while token.
+                this.tokenIndex++;
+                buildBoolExprTree(whileNode);
+
+                Node blockNode = new Node("Statement List");
+                buildBlockTree(blockNode);
+                whileNode.addChild(blockNode);
+
+                root.addChild(whileNode);
+            }
+            else if (currentToken.match("if"))
+            {
+                print("--Building If Node.");
+                Node ifNode = new Node("If");
+                // Skip if token.
+                this.tokenIndex++;
+                buildBoolExprTree(ifNode);
+
+                Node blockNode = new Node("Statement List");
+                buildBlockTree(blockNode);
+                ifNode.addChild(blockNode);
+
+                root.addChild(ifNode);
+            }
+            else if (currentToken.match("left_brace"))
+            {
+                print("--Building Block Node.");
+                Node blockNode = new Node("Statement List");
+                buildBlockTree(blockNode);
+                root.addChild(blockNode);
+            }
         }
 
         private void buildPrintStatementTree(Node root)
@@ -84,6 +133,26 @@ namespace FlatPiler
             buildExprTree(root);
             // Skip right paren.
             this.tokenIndex++;
+        }
+
+        private void buildAssignmentStatementTree(Node root)
+        {
+            Node assignmentOpNode = new Node("=");
+            buildEndNode(assignmentOpNode);
+
+            // Skip assignment Op.
+            this.tokenIndex++;
+
+            buildExprTree(assignmentOpNode);
+            root.addChild(assignmentOpNode);
+        }
+
+        private void buildVarDeclTree(Node root)
+        {
+            // Type.
+            buildEndNode(root);
+            // Variable.
+            buildEndNode(root);
         }
 
         private void buildExprTree(Node root)
