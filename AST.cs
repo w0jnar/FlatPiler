@@ -69,6 +69,7 @@ namespace FlatPiler
                 print("--Building Print Node.");
                 Node printNode = new Node("Print");
                 buildPrintStatementTree(printNode);
+                root.addChild(printNode);
                 // Console.Write(((Token)this.tokens[this.tokenIndex]).value);
             }
         }
@@ -88,9 +89,23 @@ namespace FlatPiler
         private void buildExprTree(Node root)
         {
             Token currentToken = (Token)this.tokens[this.tokenIndex];
+            // Console.Write(currentToken.type);
             if (currentToken.match("digit"))
             {
                 buildIntExprTree(root);
+            }
+            else if (currentToken.match("var_id"))
+            {
+                buildEndNode(root);
+            }
+            // This does not need to be its own case, it was more for a logic perspective. 
+            else if (currentToken.match("string"))
+            {
+                buildEndNode(root);
+            }
+            else if (currentToken.match("left_paren") || currentToken.match("true") || currentToken.match("false"))
+            {
+                buildBoolExprTree(root);
             }
         }
 
@@ -113,11 +128,50 @@ namespace FlatPiler
             }
         }
 
+        private void buildBoolExprTree(Node root)
+        {
+            Token currentToken = (Token)this.tokens[this.tokenIndex];
+            if(currentToken.match("left_paren")) 
+            {
+                // Skip left paren.
+                this.tokenIndex++;
+                // Temporary Node to hold the value of the left Expr.
+                Node tempNode = new Node("");
+
+                buildExprTree(tempNode);
+                // Console.Write(tempNode.children[0].name);
+
+                Token boolOpToken = (Token)this.tokens[this.tokenIndex++];
+                if (boolOpToken.match("boolop_equal"))
+                {
+                    print("--Building Boolean Operator Equal Node");
+                }
+                else
+                {
+                    print("--Building Boolean Operator Not Equal Node");
+                }
+                Node boolOpNode = new Node(boolOpToken.value);
+
+                boolOpNode.addChild(tempNode.children[0]);
+
+                buildExprTree(boolOpNode);
+
+                root.addChild(boolOpNode);
+
+                // Skip right paren.
+                this.tokenIndex++;
+            }
+            else 
+            {
+                buildEndNode(root);
+            }
+        }
+
         private void buildEndNode(Node root)
         {
             Token currentToken = (Token)this.tokens[this.tokenIndex++];
-            Node digitValueNode = new Node(currentToken.value);
-            root.addChild(digitValueNode);
+            Node valueNode = new Node(currentToken.value);
+            root.addChild(valueNode);
         }
 
         private void print(string message)
