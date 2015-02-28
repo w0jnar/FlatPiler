@@ -14,6 +14,7 @@ namespace FlatPiler
         private static Regex isChar = new Regex("^[a-z]$");
         private static Regex isBrace = new Regex("^[\\{\\}\\(\\)]$");
         private static Regex isString = new Regex("\"[a-z ]*\"");
+        private static Regex isBadString = new Regex("\"[a-zA-Z ]*\"");
 
         public string inputString;
         private TextBox taOutput;
@@ -113,7 +114,7 @@ namespace FlatPiler
                         i = this.inputString.Length;
                     }
                 }
-                if (!((Token)this.tokens[(this.tokens.Count - 1)]).type.Equals("end_of_file"))
+                if (!((Token)this.tokens[(this.tokens.Count - 1)]).type.Equals("end_of_file") && this.errorCount == 0)
                 {
                     print("~~~Warning, end of file is reached before an EOF character, appending one now.");
                     createToken("$", "end_of_file");
@@ -217,7 +218,9 @@ namespace FlatPiler
         private int matchString(int index)
         {
             Match match = isString.Match(this.inputString.Substring(index));
-            // print("Match: " + match.Success);
+            Match badMatch = isBadString.Match(this.inputString.Substring(index));
+            print("Match: " + match.Success);
+            print("Match: " + badMatch.Success);
             // print(this.inputString.Substring(index));
             int offset = 0;
             if (match.Success)
@@ -227,10 +230,15 @@ namespace FlatPiler
                 print("-string: " + currentString);
                 offset = currentString.Length;
             }
+            else if (badMatch.Success) 
+            {
+                this.errorCount++;
+                print("~~~Error: Invalid character Found in string.");
+            }
             else
             {
                 this.errorCount++;
-                print("~~~Error: End of execution reached before string end.");
+                print("~~~Error: End of execution reached before string end or invalid non capital character found.");
             }
             return offset;
         }
