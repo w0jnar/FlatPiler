@@ -50,7 +50,7 @@ namespace FlatPiler
                     {
                         currentChar = this.inputString[i];
                         // currentString += currentChar;
-                        this.taOutput.Text += (Environment.NewLine + "symbol: \"" + currentChar.ToString() + "\"");
+                        this.taOutput.Text += (Environment.NewLine + "symbol: \"" + currentChar + "\"");
                         if (isWhiteSpace.Match(currentChar.ToString()).Success)
                         {
                             // print("meow");
@@ -58,12 +58,12 @@ namespace FlatPiler
                         else if (isDigit.IsMatch(currentChar.ToString()))
                         {
                             print("-num: " + currentChar.ToString());
-                            createToken(currentChar.ToString(), "digit");
+                            createToken(currentChar, "digit");
                         }
                         else if (isChar.IsMatch(currentChar.ToString()) && !isChar.IsMatch(getNextChar(i)))
                         {
                             print("-id: " + currentChar.ToString());
-                            createToken(currentChar.ToString(), "var_id");
+                            createToken(currentChar, "var_id");
                         }
                         else if (isBrace.IsMatch(currentChar.ToString()))
                         {
@@ -87,27 +87,27 @@ namespace FlatPiler
                                 }
                             }
                         }
-                        else if (currentChar.ToString().Equals("\""))
+                        else if (currentChar.Equals('\"'))
                         {
                             int offset = matchString(i);
                             i += offset - 1;
                         }
-                        else if (currentChar.ToString().Equals("="))
+                        else if (currentChar.Equals('='))
                         {
                             int offset = matchEquals(i);
                             i += offset;
                         }
-                        else if (currentChar.ToString().Equals("!"))
+                        else if (currentChar.Equals('!'))
                         {
                             int offset = matchNotEquals(i);
                             i += offset;
                         }
-                        else if (currentChar.ToString().Equals("+"))
+                        else if (currentChar.Equals('+'))
                         {
                             print("-plus_op: +");
                             createToken("+", "plus_op");
                         }
-                        else if (currentChar.ToString().Equals("$"))
+                        else if (currentChar.Equals('$'))
                         {
                             print("-eof: $");
                             createToken("$", "end_of_file");
@@ -119,7 +119,7 @@ namespace FlatPiler
                         else
                         {
                             this.errorCount++;
-                            print("~~~Error: " + currentChar.ToString() + "is not valid");
+                            print("~~~Error: " + currentChar + " is not valid");
                         }
                     }
                     else
@@ -175,24 +175,10 @@ namespace FlatPiler
             Boolean canEscape = false;
             String nextChar;
             int offset = 0;
-            //while (!stringsToCheck.Contains(suspectKeyword.ToString()) || isEscape)
-            //{
-            //    print(suspectKeyword.ToString());
-            //    nextChar = getNextChar(offset++);
-            //    if (isChar.IsMatch(nextChar))
-            //    {
-            //        suspectKeyword.Append(nextChar);
-            //    }
-            //    else
-            //    {
-            //        isEscape = true;
-            //    }
-            //}
 
-            // print(suspectKeyword.ToString());
             while (!canEscape)
             {
-                print(suspectKeyword.ToString());
+                print(suspectKeyword);
 
 
                 if (!stringsToCheck[0].StartsWith(suspectKeyword.ToString())
@@ -228,35 +214,35 @@ namespace FlatPiler
 
             if (suspectKeyword.ToString() == "int")
             {
-                createToken(suspectKeyword.ToString(), "int");
+                createToken(suspectKeyword, "int");
             }
             else if (suspectKeyword.ToString() == "string")
             {
-                createToken(suspectKeyword.ToString(), "string");
+                createToken(suspectKeyword, "string");
             }
             else if (suspectKeyword.ToString() == "boolean")
             {
-                createToken(suspectKeyword.ToString(), "boolean");
+                createToken(suspectKeyword, "boolean");
             }
             else if (suspectKeyword.ToString() == "print")
             {
-                createToken(suspectKeyword.ToString(), "print");
+                createToken(suspectKeyword, "print");
             }
             else if (suspectKeyword.ToString() == "if")
             {
-                createToken(suspectKeyword.ToString(), "if");
+                createToken(suspectKeyword, "if");
             }
             else if (suspectKeyword.ToString() == "while")
             {
-                createToken(suspectKeyword.ToString(), "while");
+                createToken(suspectKeyword, "while");
             }
             else if (suspectKeyword.ToString() == "false")
             {
-                createToken(suspectKeyword.ToString(), "false");
+                createToken(suspectKeyword, "false");
             }
             else if (suspectKeyword.ToString() == "true")
             {
-                createToken(suspectKeyword.ToString(), "true");
+                createToken(suspectKeyword, "true");
             }
             else
             {
@@ -265,8 +251,8 @@ namespace FlatPiler
                 string varIDString = suspectKeyword.ToString().Substring(0, suspectKeyword.Length - 1);
                 for (int i = 0; i < varIDString.Length; i++)
                 {
-                    print("-id: " + varIDString[i].ToString());
-                    createToken(varIDString[i].ToString(), "var_id");
+                    print("-id: " + varIDString[i]);
+                    createToken(varIDString[i], "var_id");
                 }
             }
         }
@@ -275,21 +261,21 @@ namespace FlatPiler
         {
             if (braceChar.Equals('('))
             {
-                createToken(braceChar.ToString(), "left_paren");
+                createToken(braceChar, "left_paren");
             }
             else if (braceChar.Equals(')'))
             {
-                createToken(braceChar.ToString(), "right_paren");
+                createToken(braceChar, "right_paren");
             }
             else if (braceChar.Equals('{'))
             {
-                createToken(braceChar.ToString(), "left_brace");
+                createToken(braceChar, "left_brace");
             }
             else if (braceChar.Equals('}'))
             {
-                createToken(braceChar.ToString(), "right_brace");
+                createToken(braceChar, "right_brace");
             }
-            print("-brace: " + braceChar.ToString());
+            print("-brace: " + braceChar);
         }
 
         private int matchString(int index)
@@ -356,21 +342,21 @@ namespace FlatPiler
             return offset;
         }
 
-        private void print(string message)
+        private void print(Object message)
         {
             this.taOutput.Text += (Environment.NewLine + message);
         }
 
-        private void createToken(string symbol, string name)
+        private void createToken(Object symbol, string name)
         {
-            this.tokens.Add(new Token(symbol, name));
+            this.tokens.Add(new Token(symbol.ToString(), name));
         }
 
         private void printTokens()
         {
             for (int i = 0; i < this.tokens.Count; i++)
             {
-                print(((Token)this.tokens[i]).ToString());
+                print(((Token)this.tokens[i]));
             }
         }
     }

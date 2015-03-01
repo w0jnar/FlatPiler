@@ -243,7 +243,7 @@ namespace FlatPiler
             root.addChild(valueNode);
         }
 
-        private void print(string message)
+        private void print(Object message)
         {
             this.taOutput.Text += (Environment.NewLine + message);
         }

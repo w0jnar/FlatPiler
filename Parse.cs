@@ -362,7 +362,7 @@ namespace FlatPiler
             Boolean returnValue;
             if (this.currentToken.match("plus_op"))
             {
-                print("-Parsing token: " + this.currentToken.ToString());
+                print("-Parsing token: " + this.currentToken);
                 this.tokenIndex++;
                 returnValue = parseExpr();
             }
@@ -461,7 +461,7 @@ namespace FlatPiler
             if (checkTokensRemaining())
             {
                 this.currentToken = (Token)this.tokens[this.tokenIndex++];
-                print("-parsing token: " + this.currentToken.ToString());
+                print("-parsing token: " + this.currentToken);
                 this.wasSuccessful = false;
             }
             else
@@ -471,7 +471,7 @@ namespace FlatPiler
             }
         }
 
-        private void print(string message)
+        private void print(Object message)
         {
             this.taOutput.Text += (Environment.NewLine + message);
         }
