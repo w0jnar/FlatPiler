@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -15,6 +16,9 @@ namespace FlatPiler
         private static Regex isBrace = new Regex("^[\\{\\}\\(\\)]$");
         private static Regex isString = new Regex("\"[a-z ]*\"");
         private static Regex isBadString = new Regex("\"[a-zA-Z ]*\"");
+        private static Regex isWhiteSpace = new Regex("[\\s]");
+
+        private static List<string> stringsToCheck = new List<string>() { "int", "string", "boolean", "print", "if", "while", "false", "true" };
 
         public string inputString;
         private TextBox taOutput;
@@ -23,7 +27,8 @@ namespace FlatPiler
 
         public Lex(string inputString, TextBox taOutput)
         {
-            this.inputString = Regex.Replace(inputString, @"\s+", " ");
+            // this.inputString = Regex.Replace(inputString, @"\s+", " ");
+            this.inputString = inputString;
             this.taOutput = taOutput;
         }
 
@@ -46,8 +51,9 @@ namespace FlatPiler
                         currentChar = this.inputString[i];
                         // currentString += currentChar;
                         this.taOutput.Text += (Environment.NewLine + "symbol: \"" + currentChar.ToString() + "\"");
-                        if (currentChar.ToString().Equals(" "))
+                        if (isWhiteSpace.Match(currentChar.ToString()).Success)
                         {
+                            // print("meow");
                         }
                         else if (isDigit.IsMatch(currentChar.ToString()))
                         {
@@ -65,12 +71,20 @@ namespace FlatPiler
                         }
                         else if (isChar.IsMatch(currentChar.ToString()) && isChar.IsMatch(getNextChar(i)))
                         {
+                            int offset = this.tokens.Count;
                             matchKeyWord(i);
                             if (this.tokens.Count > 0 && this.errorCount == 0)
                             {
-                                string lastTokenValue = ((Token)this.tokens[(this.tokens.Count - 1)]).value;
-                                i += lastTokenValue.Length - 1;
-                                print("-word: " + lastTokenValue);
+                                Token lastToken = (Token)this.tokens[(this.tokens.Count - 1)];
+                                // If this next part is true, we just had a key word. Vars are printed as they are tokenized.
+                                if (!lastToken.type.Equals("var_id"))
+                                {
+                                    i += lastToken.value.Length - 1;
+                                    print("-word: " + lastToken.value);
+                                }
+                                else {
+                                    i += this.tokens.Count - offset - 1;
+                                }
                             }
                         }
                         else if (currentChar.ToString().Equals("\""))
@@ -151,46 +165,109 @@ namespace FlatPiler
 
         private void matchKeyWord(int index)
         {
-            int offset = nextWordIndex(index);
-            string suspectKeyword = this.inputString.Substring(index, offset);
+            // int offset = nextWordIndex(index);
+            // string suspectKeyword = this.inputString.Substring(index, offset);
             // this.taOutput.Text += (Environment.NewLine + "symbol: \"" + suspectKeyword + "\"");
             // this.tokens.Add(new Token(suspectKeyword, "meow"));
-            if (suspectKeyword == "int")
+
+            StringBuilder suspectKeyword = new StringBuilder(this.inputString[index].ToString());
+            // stringsToCheck
+            Boolean canEscape = false;
+            String nextChar;
+            int offset = 0;
+            //while (!stringsToCheck.Contains(suspectKeyword.ToString()) || isEscape)
+            //{
+            //    print(suspectKeyword.ToString());
+            //    nextChar = getNextChar(offset++);
+            //    if (isChar.IsMatch(nextChar))
+            //    {
+            //        suspectKeyword.Append(nextChar);
+            //    }
+            //    else
+            //    {
+            //        isEscape = true;
+            //    }
+            //}
+
+            // print(suspectKeyword.ToString());
+            while (!canEscape)
             {
-                createToken(suspectKeyword, "int");
+                print(suspectKeyword.ToString());
+
+
+                if (!stringsToCheck[0].StartsWith(suspectKeyword.ToString())
+                    && !stringsToCheck[1].StartsWith(suspectKeyword.ToString())
+                    && !stringsToCheck[2].StartsWith(suspectKeyword.ToString())
+                    && !stringsToCheck[3].StartsWith(suspectKeyword.ToString())
+                    && !stringsToCheck[4].StartsWith(suspectKeyword.ToString())
+                    && !stringsToCheck[5].StartsWith(suspectKeyword.ToString())
+                    && !stringsToCheck[6].StartsWith(suspectKeyword.ToString())
+                    && !stringsToCheck[7].StartsWith(suspectKeyword.ToString()))
+                {
+                    canEscape = true;
+                }
+                else if (stringsToCheck.Contains(suspectKeyword.ToString()))
+                {
+                    canEscape = true;
+                }
+                else
+                {
+                    nextChar = getNextChar(index + offset++);
+                    if (isChar.IsMatch(nextChar))
+                    {
+                        suspectKeyword.Append(nextChar);
+                    }
+                    else
+                    {
+                        canEscape = true;
+                    }
+                }
             }
-            else if (suspectKeyword == "string")
+
+
+
+            if (suspectKeyword.ToString() == "int")
             {
-                createToken(suspectKeyword, "string");
+                createToken(suspectKeyword.ToString(), "int");
             }
-            else if (suspectKeyword == "boolean")
+            else if (suspectKeyword.ToString() == "string")
             {
-                createToken(suspectKeyword, "boolean");
+                createToken(suspectKeyword.ToString(), "string");
             }
-            else if (suspectKeyword == "print")
+            else if (suspectKeyword.ToString() == "boolean")
             {
-                createToken(suspectKeyword, "print");
+                createToken(suspectKeyword.ToString(), "boolean");
             }
-            else if (suspectKeyword == "if")
+            else if (suspectKeyword.ToString() == "print")
             {
-                createToken(suspectKeyword, "if");
+                createToken(suspectKeyword.ToString(), "print");
             }
-            else if (suspectKeyword == "while")
+            else if (suspectKeyword.ToString() == "if")
             {
-                createToken(suspectKeyword, "while");
+                createToken(suspectKeyword.ToString(), "if");
             }
-            else if (suspectKeyword == "false")
+            else if (suspectKeyword.ToString() == "while")
             {
-                createToken(suspectKeyword, "false");
+                createToken(suspectKeyword.ToString(), "while");
             }
-            else if (suspectKeyword == "true")
+            else if (suspectKeyword.ToString() == "false")
             {
-                createToken(suspectKeyword, "true");
+                createToken(suspectKeyword.ToString(), "false");
+            }
+            else if (suspectKeyword.ToString() == "true")
+            {
+                createToken(suspectKeyword.ToString(), "true");
             }
             else
             {
-                print("~~~Error: " + suspectKeyword + " is not valid");
-                this.errorCount++;
+                // print("~~~Error: " + suspectKeyword + " is not valid");
+                // this.errorCount++;
+                string varIDString = suspectKeyword.ToString().Substring(0, suspectKeyword.Length - 1);
+                for (int i = 0; i < varIDString.Length; i++)
+                {
+                    print("-id: " + varIDString[i].ToString());
+                    createToken(varIDString[i].ToString(), "var_id");
+                }
             }
         }
 
@@ -219,8 +296,8 @@ namespace FlatPiler
         {
             Match match = isString.Match(this.inputString.Substring(index));
             Match badMatch = isBadString.Match(this.inputString.Substring(index));
-            print("Match: " + match.Success);
-            print("Match: " + badMatch.Success);
+            // print("Match: " + match.Success);
+            // print("Match: " + badMatch.Success);
             // print(this.inputString.Substring(index));
             int offset = 0;
             if (match.Success)
@@ -230,7 +307,7 @@ namespace FlatPiler
                 print("-string: " + currentString);
                 offset = currentString.Length;
             }
-            else if (badMatch.Success) 
+            else if (badMatch.Success)
             {
                 this.errorCount++;
                 print("~~~Error: Invalid character Found in string.");
