@@ -246,14 +246,8 @@ namespace FlatPiler
             }
             else
             {
-                // print("~~~Error: " + suspectKeyword + " is not valid");
-                // this.errorCount++;
-                string varIDString = suspectKeyword.ToString().Substring(0, suspectKeyword.Length - 1);
-                for (int i = 0; i < varIDString.Length; i++)
-                {
-                    print("-id: " + varIDString[i]);
-                    createToken(varIDString[i], "var_id");
-                }
+                print("-id: " + suspectKeyword[0]);
+                createToken(suspectKeyword[0], "var_id");
             }
         }
 
