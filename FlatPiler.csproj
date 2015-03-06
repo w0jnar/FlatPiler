@@ -60,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AST.cs" />
+    <Compile Include="SymbolTable.cs" />
     <Compile Include="Node.cs" />
     <Compile Include="CST.cs" />
     <Compile Include="Parse.cs" />

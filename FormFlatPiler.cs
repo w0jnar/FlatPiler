@@ -42,6 +42,9 @@ namespace FlatPiler
 
                     AST ast = new AST(tokens, taOutput);
                     ast.buildAST();
+
+                    SymbolTable symbolTable = new SymbolTable(ast.root, taOutput);
+                    symbolTable.generateSymbolTable();
                 }
             }
         }
