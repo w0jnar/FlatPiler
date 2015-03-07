@@ -190,6 +190,7 @@ namespace FlatPiler
 
                 this.tokenIndex++;
                 buildIntExprTree(plusOpNode);
+                root.addChild(plusOpNode);
             }
             else
             {

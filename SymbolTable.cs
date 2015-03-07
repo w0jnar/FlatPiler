@@ -11,6 +11,7 @@ namespace FlatPiler
     class SymbolTable
     {
         private static Regex isDigit = new Regex("^[0-9]$");
+        private static Regex isString = new Regex("\"[a-z ]*\"");
 
         private Node astRoot;
         private TextBox taOutput;
@@ -166,6 +167,14 @@ namespace FlatPiler
             {
                 returnValues = generateBooleanExpr(root);
             }
+            else if (isString.IsMatch(root.name))
+            {
+                returnValues = new List<object>() { "string", root.name };
+            }
+            else if (root.name == "+")
+            {
+                returnValues = generateIntExpr(root);
+            }
             else
             {
                 // Should be impossible to reach when this function is finished, but I felt having detailed
@@ -193,7 +202,7 @@ namespace FlatPiler
                 string rightType = rightExpr[0].ToString();
                 if (leftType != rightType)
                 {
-                    print("~~~ERROR: Invalid Boolean Expression, types do not match");
+                    print("~~~ERROR: Invalid Boolean Expression, types do not match.");
                     this.errorCount++;
                     returnType = "error";
                     returnBoolean = "You've met with a terrible fate, haven't you?";
@@ -214,6 +223,34 @@ namespace FlatPiler
                 }
             }
             return new List<Object>() { returnType, returnBoolean.ToLower() };
+        }
+
+        private List<Object> generateIntExpr(Node root)
+        {
+            string returnType = "int";
+            int returnValue;
+            // Digit.
+            List<Object> leftExpr = generateExpr(root.children[0]);
+            // Expr.
+            List<Object> rightExpr = generateExpr(root.children[1]);
+            if (leftExpr[0].ToString() == "int" && rightExpr[0].ToString() == "int")
+            {
+                returnValue = (int)leftExpr[1] + (int)rightExpr[1];
+            }
+            else if (rightExpr[0].ToString() == "error")
+            {
+                // This case is so the same error does not get printed multiple times in a cascade.
+                returnType = "error";
+                returnValue = -1;
+            }
+            else
+            {
+                print("~~~ERROR: Invalid Int Expression, types do not match.");
+                this.errorCount++;
+                returnType = "error";
+                returnValue = -1;
+            }
+            return new List<Object>() { returnType, returnValue };
         }
 
         private Boolean inCurrentScope(String id)

@@ -241,7 +241,6 @@ namespace FlatPiler
             print("--Building Digit Node.");
             Node digitNode = new Node("Digit");
             buildEndNode(digitNode);
-            root.addChild(digitNode);
 
             Token currentToken = (Token)this.tokens[this.tokenIndex];
             if (currentToken.match("plus_op"))
@@ -251,12 +250,18 @@ namespace FlatPiler
 
                 Node intOpNode = new Node("Int Op");
                 buildEndNode(intOpNode);
-                root.addChild(intOpNode);
+                intOpNode.addChild(digitNode);
 
-                print("--Building Digit Node.");
-                Node secondDigitNode = new Node("Digit");
-                buildEndNode(secondDigitNode);
-                root.addChild(secondDigitNode);
+                print("--Building Expr Node.");
+                Node exprNode = new Node("Expr");
+                buildExprTree(exprNode);
+                intOpNode.addChild(exprNode);
+
+                root.addChild(intOpNode);
+            }
+            else 
+            {
+                root.addChild(digitNode);
             }
         }
 
