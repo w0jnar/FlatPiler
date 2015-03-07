@@ -12,6 +12,7 @@ namespace FlatPiler
     {
         private static Regex isDigit = new Regex("^[0-9]$");
         private static Regex isString = new Regex("\"[a-z ]*\"");
+        private static Regex isChar = new Regex("^[a-z]$");
 
         private Node astRoot;
         private TextBox taOutput;
@@ -83,9 +84,19 @@ namespace FlatPiler
                 if (this.scopes[this.currentScope].scopeMembers.Count > 0)
                 {
                     print("~~~Scope contained:");
+                    ScopeElement currentScopeElement;
                     for (int i = 0; i < this.scopes[this.currentScope].scopeMembers.Count; i++)
                     {
-                        print(this.scopes[this.currentScope].scopeMembers[i]);
+                        currentScopeElement = this.scopes[this.currentScope].scopeMembers[i];
+                        print(currentScopeElement);
+                        if (!currentScopeElement.isUsed && !currentScopeElement.isInitialized)
+                        {
+                            print("~~~Warning, id " + currentScopeElement.id + " is declared but not initialized or used.");
+                        }
+                        else if (!currentScopeElement.isUsed && currentScopeElement.isInitialized)
+                        {
+                            print("~~~Warning, id " + currentScopeElement.id + " is declared and initialized, but not used.");
+                        }
                     }
                 }
                 else
@@ -174,6 +185,28 @@ namespace FlatPiler
             else if (root.name == "+")
             {
                 returnValues = generateIntExpr(root);
+            }
+            else if (isChar.IsMatch(root.name))
+            {
+                List<int> scopeLocations = findScope(root.name);
+                int scopeIndex = scopeLocations[0];
+                int locationInScope = scopeLocations[1];
+                if (scopeIndex != -1 && locationInScope != -1)
+                {
+                    ScopeElement idToUse = this.scopes[scopeIndex].scopeMembers[locationInScope];
+                    idToUse.isUsed = true;
+                    if (!idToUse.isInitialized)
+                    {
+                        print("~~~Warning, id " + root.name + " is used without being initialized.");
+                    }
+                    returnValues = new List<Object>() { idToUse.type, idToUse.value };
+                }
+                else
+                {
+                    print("~~~Error: id " + root.name + " is not declared in its scope or any parent scope.");
+                    this.errorCount++;
+                    returnValues = new List<Object>() { "error", "You've met with a terrible fate, haven't you?" };
+                }
             }
             else
             {
