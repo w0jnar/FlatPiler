@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -9,6 +10,8 @@ namespace FlatPiler
 {
     class SymbolTable
     {
+        private static Regex isDigit = new Regex("^[0-9]$");
+
         private Node astRoot;
         private TextBox taOutput;
         private List<ScopeNode> scopes = new List<ScopeNode>();
@@ -154,7 +157,63 @@ namespace FlatPiler
 
         private List<Object> generateExpr(Node root)
         {
-            return new List<Object>() {"int", 2 };
+            List<Object> returnValues;
+            if (isDigit.IsMatch(root.name))
+            {
+                returnValues = new List<object>() { "int", Int32.Parse(root.name) };
+            }
+            else if (root.name == "==" || root.name == "!=" || root.name == "false" || root.name == "true")
+            {
+                returnValues = generateBooleanExpr(root);
+            }
+            else
+            {
+                // Should be impossible to reach when this function is finished, but I felt having detailed
+                // if/else blocks was more desirable than letting whatever the end branch was going to else.
+                this.errorCount++;
+                returnValues = new List<Object>() { "error", "You've met with a terrible fate, haven't you?" };
+            }
+            // return new List<Object>() {"int", 2 };
+            return returnValues;
+        }
+
+        private List<Object> generateBooleanExpr(Node root)
+        {
+            string returnType = "boolean";
+            string returnBoolean;
+            if (root.name == "true" || root.name == "false")
+            {
+                returnBoolean = root.name;
+            }
+            else
+            {
+                List<Object> leftExpr = generateExpr(root.children[0]);
+                List<Object> rightExpr = generateExpr(root.children[1]);
+                string leftType = leftExpr[0].ToString();
+                string rightType = rightExpr[0].ToString();
+                if (leftType != rightType)
+                {
+                    print("~~~ERROR: Invalid Boolean Expression, types do not match");
+                    this.errorCount++;
+                    returnType = "error";
+                    returnBoolean = "You've met with a terrible fate, haven't you?";
+                }
+                else if (root.name == "==")
+                {
+                    returnBoolean = (leftExpr[1].ToString() == rightExpr[1].ToString()).ToString();
+                }
+                else if (root.name == "!=")
+                {
+                    returnBoolean = (leftExpr[1].ToString() != rightExpr[1].ToString()).ToString();
+                }
+                else
+                {
+                    this.errorCount++;
+                    returnType = "error";
+                    returnBoolean = "You've met with a terrible fate, haven't you?";
+                }
+            }
+            return new List<Object>() { returnType, returnBoolean.ToLower() };
         }
 
         private Boolean inCurrentScope(String id)
