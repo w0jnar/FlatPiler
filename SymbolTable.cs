@@ -71,6 +71,10 @@ namespace FlatPiler
                 {
                     generatePrint(root.children[i]);
                 }
+                else if (root.children[i].name == "While" || root.children[i].name == "If")
+                {
+                    generateWhileIf(root.children[i]);
+                }
 
                 if (this.errorCount > 0)
                 {
@@ -165,6 +169,17 @@ namespace FlatPiler
         private void generatePrint(Node root)
         {
             generateExpr(root.children[0]);
+        }
+
+        private void generateWhileIf(Node root)
+        {
+            List<Object> booleanExprList = generateBooleanExpr(root.children[0]);
+            if (booleanExprList[0].ToString() == "boolean")
+            {
+                // Console.Write("meow");
+                generateBlock(root.children[1]);
+            }
+            // No else case, as any error for booleanExpr's will already be printed.
         }
 
         private List<Object> generateExpr(Node root)
