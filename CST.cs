@@ -27,9 +27,8 @@ namespace FlatPiler
             print("--Building Program Node.");
             this.root = new Node("Program");
             buildProgramTree(this.root);
-            // print(this.root.children[0].name);
             print("~~~Ending CST Building." + Environment.NewLine + Environment.NewLine);
-            this.root.PrintPretty("", true, taOutput);
+            print(this.root.PrintPretty("", true, ""));
         }
 
         private void buildProgramTree(Node root)

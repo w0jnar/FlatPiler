@@ -23,24 +23,27 @@ namespace FlatPiler
             this.children.Add(child);
         }
 
-        // Slight adaptation from http://stackoverflow.com/questions/1649027/how-do-i-print-out-a-tree-structure
-        public void PrintPretty(string indent, bool last, TextBox ta)
+        // Adaptation of http://stackoverflow.com/questions/1649027/how-do-i-print-out-a-tree-structure
+        public string PrintPretty(string indent, bool last, string input)
         {
-            ta.Text += indent;
+            input += indent;
             if (last)
             {
-                ta.Text += "\\:";
+                input += "\\:";
                 indent += "  ";
             }
             else
             {
-                ta.Text += "|:";
+                input += "|:";
                 indent += "| ";
             }
-            ta.Text += (this.name + Environment.NewLine);
+            input += (this.name + Environment.NewLine);
 
             for (int i = 0; i < this.children.Count; i++)
-                this.children[i].PrintPretty(indent, i == this.children.Count - 1, ta);
+            {
+                input += this.children[i].PrintPretty(indent, i == this.children.Count - 1, "");
+            }
+            return input;
         }
 
     }

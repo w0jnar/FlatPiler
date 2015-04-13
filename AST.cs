@@ -29,7 +29,7 @@ namespace FlatPiler
             buildBlockTree(this.root);
 
             print("~~~Ending AST Building." + Environment.NewLine + Environment.NewLine);
-            this.root.PrintPretty("", true, taOutput);
+            print(this.root.PrintPretty("", true, ""));
         }
 
         private void buildBlockTree(Node root)
@@ -203,7 +203,6 @@ namespace FlatPiler
                 Node tempNode = new Node("");
 
                 buildExprTree(tempNode);
-                // Console.Write(tempNode.children[0].name);
 
                 Token boolOpToken = this.tokens[this.tokenIndex++];
                 if (boolOpToken.match("boolop_equal"))

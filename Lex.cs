@@ -26,14 +26,12 @@ namespace FlatPiler
 
         public Lex(string inputString, TextBox taOutput)
         {
-            // this.inputString = Regex.Replace(inputString, @"\s+", " ");
             this.inputString = inputString;
             this.taOutput = taOutput;
         }
 
         public void analysis()
         {
-            // this.taOutput.Text += (Environment.NewLine + this.inputString);
             if (this.inputString.Length == 0)
             {
                 this.errorCount++;
@@ -42,17 +40,14 @@ namespace FlatPiler
             else
             {
                 char currentChar;
-                // string currentString = "";
                 for (int i = 0; i < this.inputString.Length; i++)
                 {
                     if (this.errorCount == 0)
                     {
                         currentChar = this.inputString[i];
-                        // currentString += currentChar;
                         this.taOutput.Text += (Environment.NewLine + "symbol: \"" + currentChar + "\"");
                         if (isWhiteSpace.Match(currentChar.ToString()).Success)
                         {
-                            // print("meow");
                         }
                         else if (isDigit.IsMatch(currentChar.ToString()))
                         {
@@ -136,8 +131,6 @@ namespace FlatPiler
                 if (this.errorCount == 0)
                 {
                     print("---Lex Finished Successfully. Nice!");
-
-                    // printTokens();
                 }
             }
         }
@@ -165,7 +158,6 @@ namespace FlatPiler
         private void matchKeyWord(int index)
         {
             StringBuilder suspectKeyword = new StringBuilder(this.inputString[index].ToString());
-            // stringsToCheck
             Boolean canEscape = false;
             String nextChar;
             int offset = 0;

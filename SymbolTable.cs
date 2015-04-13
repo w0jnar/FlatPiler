@@ -30,8 +30,6 @@ namespace FlatPiler
         {
             print("");
             print("~~~Starting To Generate Symbol Table.");
-            // print(this.astRoot.name);
-            // print(this.astRoot.children[0].name);
             generateBlock(this.astRoot);
             print("");
             if (this.errorCount == 0)
@@ -109,10 +107,6 @@ namespace FlatPiler
                 }
                 this.currentScope = this.scopes[this.currentScope].parentId;
             }
-            else
-            {
-                // print("~~~Error: There was a Symbol Table generation error.");
-            }
         }
 
         private void generateVarDecl(Node root)
@@ -176,7 +170,6 @@ namespace FlatPiler
             List<Object> booleanExprList = generateBooleanExpr(root.children[0]);
             if (booleanExprList[0].ToString() == "boolean")
             {
-                // Console.Write("meow");
                 generateBlock(root.children[1]);
             }
             // No else case, as any error for booleanExpr's will already be printed.
@@ -230,7 +223,6 @@ namespace FlatPiler
                 this.errorCount++;
                 returnValues = new List<Object>() { "error", "You've met with a terrible fate, haven't you?" };
             }
-            // return new List<Object>() {"int", 2 };
             return returnValues;
         }
 

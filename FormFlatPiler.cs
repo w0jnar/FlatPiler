@@ -22,11 +22,8 @@ namespace FlatPiler
         {
             string inputText = taInput.Text;
             taOutput.Text = "~~~Starting Lexical Analysis";
-            // taOutput.Text += (Environment.NewLine + inputText);
             Lex lexer = new Lex(inputText, taOutput);
             lexer.analysis();
-
-            // taOutput.Text += (Environment.NewLine + Environment.NewLine + ((Token)lexer.tokens[1]).ToString());
 
             // Creating this as it will be used in CST generation.
             List<Token> tokens = lexer.tokens;
