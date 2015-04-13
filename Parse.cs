@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,16 +9,16 @@ namespace FlatPiler
 {
     class Parse
     {
-        public ArrayList tokens;
+        public List<Token> tokens;
         private TextBox taOutput;
         public int errorCount = 0;
         private int tokenIndex = 0;
         private Token currentToken;
         private Boolean wasSuccessful;
 
-        public Parse(ArrayList tokens, TextBox taOutput)
+        public Parse(List<Token> tokens, TextBox taOutput)
         {
-            this.tokens = new ArrayList(tokens);
+            this.tokens = tokens;
             this.taOutput = taOutput;
         }
 
@@ -358,7 +358,7 @@ namespace FlatPiler
 
         private Boolean parseIntExpr()
         {
-            this.currentToken = (Token)this.tokens[this.tokenIndex];
+            this.currentToken = this.tokens[this.tokenIndex];
             Boolean returnValue;
             if (this.currentToken.match("plus_op"))
             {
@@ -460,7 +460,7 @@ namespace FlatPiler
         {
             if (checkTokensRemaining())
             {
-                this.currentToken = (Token)this.tokens[this.tokenIndex++];
+                this.currentToken = this.tokens[this.tokenIndex++];
                 print("-parsing token: " + this.currentToken);
                 this.wasSuccessful = false;
             }

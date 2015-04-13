@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,14 +9,14 @@ namespace FlatPiler
 {
     class CST
     {
-        public ArrayList tokens;
+        public List<Token> tokens;
         private TextBox taOutput;
         public Node root;
         private int tokenIndex = 0;
 
-        public CST(ArrayList tokens, TextBox taOutput)
+        public CST(List<Token> tokens, TextBox taOutput)
         {
-            this.tokens = new ArrayList(tokens);
+            this.tokens = tokens;
             this.taOutput = taOutput;
         }
 
@@ -65,7 +65,7 @@ namespace FlatPiler
         private void buildStatementListTree(Node root)
         {
             print("--Building StatementList Node.");
-            Token currentToken = (Token)this.tokens[this.tokenIndex];
+            Token currentToken = this.tokens[this.tokenIndex];
             if (!currentToken.match("right_brace"))
             {
                 Node statementNode = new Node("Statement");
@@ -86,7 +86,7 @@ namespace FlatPiler
         private void buildStatementTree(Node root)
         {
             print("--Building Statement Node.");
-            Token currentToken = (Token)this.tokens[this.tokenIndex];
+            Token currentToken = this.tokens[this.tokenIndex];
             if (currentToken.match("print"))
             {
                 print("--Building Print Statement Node.");
@@ -186,7 +186,7 @@ namespace FlatPiler
 
         private void buildWhileIfStatementTree(Node root) 
         {
-            Token currentToken = (Token)this.tokens[this.tokenIndex++];
+            Token currentToken = this.tokens[this.tokenIndex++];
             Node whileIfNode = new Node(currentToken.value);
             root.addChild(whileIfNode);
 
@@ -204,7 +204,7 @@ namespace FlatPiler
         private void buildExprTree(Node root)
         {
             print("--Building Expr Node.");
-            Token currentToken = (Token)this.tokens[this.tokenIndex];
+            Token currentToken = this.tokens[this.tokenIndex];
 
             if (currentToken.match("digit"))
             {
@@ -242,7 +242,7 @@ namespace FlatPiler
             Node digitNode = new Node("Digit");
             buildEndNode(digitNode);
 
-            Token currentToken = (Token)this.tokens[this.tokenIndex];
+            Token currentToken = this.tokens[this.tokenIndex];
             if (currentToken.match("plus_op"))
             {
                 print("--Building Int Op Node.");
@@ -283,7 +283,7 @@ namespace FlatPiler
 
         private void buildBooleanExprTree(Node root)
         {
-            Token currentToken = (Token)this.tokens[this.tokenIndex];
+            Token currentToken = this.tokens[this.tokenIndex];
             if (currentToken.match("left_paren"))
             {
                 print("--Building Left Parenthesis Node.");
@@ -296,7 +296,7 @@ namespace FlatPiler
                 buildExprTree(exprNode);
                 root.addChild(exprNode);
 
-                currentToken = (Token)this.tokens[this.tokenIndex];
+                currentToken = this.tokens[this.tokenIndex];
                 if (currentToken.match("boolop_equal"))
                 {
                     print("--Building Boolean Operator Equal Node");
@@ -330,7 +330,7 @@ namespace FlatPiler
 
         private void buildEndNode(Node root)
         {
-            Token currentToken = (Token)this.tokens[this.tokenIndex++];
+            Token currentToken = this.tokens[this.tokenIndex++];
             Node digitValueNode = new Node(currentToken.value);
             root.addChild(digitValueNode);
         }

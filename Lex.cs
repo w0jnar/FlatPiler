@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,7 +21,7 @@ namespace FlatPiler
 
         public string inputString;
         private TextBox taOutput;
-        public ArrayList tokens = new ArrayList();
+        public List<Token> tokens = new List<Token>();
         public int errorCount = 0;
 
         public Lex(string inputString, TextBox taOutput)
@@ -75,7 +74,7 @@ namespace FlatPiler
                             matchKeyWord(i);
                             if (this.tokens.Count > 0 && this.errorCount == 0)
                             {
-                                Token lastToken = (Token)this.tokens[(this.tokens.Count - 1)];
+                                Token lastToken = this.tokens[(this.tokens.Count - 1)];
                                 // If this next part is true, we just had a key word. Vars are printed as they are tokenized.
                                 if (!lastToken.type.Equals("var_id"))
                                 {
@@ -128,7 +127,7 @@ namespace FlatPiler
                         i = this.inputString.Length;
                     }
                 }
-                if (!((Token)this.tokens[(this.tokens.Count - 1)]).type.Equals("end_of_file") && this.errorCount == 0)
+                if (!(this.tokens[(this.tokens.Count - 1)]).type.Equals("end_of_file") && this.errorCount == 0)
                 {
                     print("~~~Warning, end of file is reached before an EOF character, appending one now.");
                     createToken("$", "end_of_file");
@@ -165,11 +164,6 @@ namespace FlatPiler
 
         private void matchKeyWord(int index)
         {
-            // int offset = nextWordIndex(index);
-            // string suspectKeyword = this.inputString.Substring(index, offset);
-            // this.taOutput.Text += (Environment.NewLine + "symbol: \"" + suspectKeyword + "\"");
-            // this.tokens.Add(new Token(suspectKeyword, "meow"));
-
             StringBuilder suspectKeyword = new StringBuilder(this.inputString[index].ToString());
             // stringsToCheck
             Boolean canEscape = false;
@@ -276,9 +270,6 @@ namespace FlatPiler
         {
             Match match = isString.Match(this.inputString.Substring(index));
             Match badMatch = isBadString.Match(this.inputString.Substring(index));
-            // print("Match: " + match.Success);
-            // print("Match: " + badMatch.Success);
-            // print(this.inputString.Substring(index));
             int offset = 0;
             if (match.Success)
             {
@@ -350,7 +341,7 @@ namespace FlatPiler
         {
             for (int i = 0; i < this.tokens.Count; i++)
             {
-                print(((Token)this.tokens[i]));
+                print(this.tokens[i]);
             }
         }
     }

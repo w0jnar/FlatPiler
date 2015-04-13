@@ -29,7 +29,7 @@ namespace FlatPiler
             // taOutput.Text += (Environment.NewLine + Environment.NewLine + ((Token)lexer.tokens[1]).ToString());
 
             // Creating this as it will be used in CST generation.
-            ArrayList tokens = new ArrayList(lexer.tokens);
+            List<Token> tokens = lexer.tokens;
 
             if (lexer.errorCount == 0)
             {
