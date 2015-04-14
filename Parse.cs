@@ -11,6 +11,7 @@ namespace FlatPiler
     {
         public List<Token> tokens;
         private TextBox taOutput;
+        private StringBuilder outputString = new StringBuilder("");
         public int errorCount = 0;
         private int tokenIndex = 0;
         private Token currentToken;
@@ -24,12 +25,12 @@ namespace FlatPiler
 
         public void parseProgram()
         {
-            print("");
-            print("~~~Starting Parse");
+            buildPrintMessage("");
+            buildPrintMessage("~~~Starting Parse");
             if (this.tokens.Count == 0)
             {
                 this.errorCount++;
-                print("~~~Error: No tokens to parse!");
+                buildPrintMessage("~~~Error: No tokens to parse!");
             }
             else
             {
@@ -38,13 +39,14 @@ namespace FlatPiler
 
             if (this.errorCount > 0)
             {
-                print("There was an error, execution stopped.");
+                buildPrintMessage("There was an error, execution stopped.");
             }
             else
             {
-                print("No Parse Errors Found! Nice!");
+                buildPrintMessage("No Parse Errors Found! Nice!");
             }
-            print("~~~Ending Parse");
+            buildPrintMessage("~~~Ending Parse");
+            print();
         }
 
         private void startParse()
@@ -57,12 +59,12 @@ namespace FlatPiler
                 this.wasSuccessful = this.currentToken.match("end_of_file");
                 if (this.wasSuccessful)
                 {
-                    print("-Program parsing ended.");
+                    buildPrintMessage("-Program parsing ended.");
                 }
                 else
                 {
                     this.errorCount++;
-                    print("~~~Error: Program improperly ended.");
+                    buildPrintMessage("~~~Error: Program improperly ended.");
                 }
             }
         }
@@ -76,7 +78,7 @@ namespace FlatPiler
             this.wasSuccessful = this.currentToken.match("left_brace");
             if (this.wasSuccessful)
             {
-                print("-Parsing Block");
+                buildPrintMessage("-Parsing Block");
                 this.wasSuccessful = false;
                 this.wasSuccessful = parseStatementList();
                 if (this.wasSuccessful)
@@ -84,28 +86,28 @@ namespace FlatPiler
                     this.wasSuccessful = this.currentToken.match("right_brace");
                     if (this.wasSuccessful)
                     {
-                        print("-Finished Parsing Block.");
+                        buildPrintMessage("-Finished Parsing Block.");
                         returnValue = true;
 
                     }
                     else
                     {
                         this.errorCount++;
-                        print("~~~Error: Program block improperly ended.");
+                        buildPrintMessage("~~~Error: Program block improperly ended.");
                         returnValue = false;
                     }
                 }
                 else
                 {
                     this.errorCount++;
-                    print("~~~Error: Program block improperly ended.");
+                    buildPrintMessage("~~~Error: Program block improperly ended.");
                     returnValue = false;
                 }
             }
             else
             {
                 this.errorCount++;
-                print("~~~Error: Program improperly ended.");
+                buildPrintMessage("~~~Error: Program improperly ended.");
                 returnValue = false;
             }
 
@@ -127,7 +129,7 @@ namespace FlatPiler
                 else
                 {
                     this.errorCount++;
-                    print("~~~Error: Statement improperly parsed.");
+                    buildPrintMessage("~~~Error: Statement improperly parsed.");
                     break;
                 }
             }
@@ -139,7 +141,7 @@ namespace FlatPiler
             }
             else
             {
-                print("~~~Parse ending due to Error(s).");
+                buildPrintMessage("~~~Parse ending due to Error(s).");
                 returnValue = false;
             }
             return returnValue;
@@ -147,7 +149,7 @@ namespace FlatPiler
 
         private Boolean parseStatement()
         {
-            print("-Beginning Parse of a Statement.");
+            buildPrintMessage("-Beginning Parse of a Statement.");
             Boolean returnValue;
             if (this.currentToken.match("print"))
             {
@@ -176,7 +178,7 @@ namespace FlatPiler
             else
             {
                 this.errorCount++;
-                print("~~~Error: Invalid statement, improper starting token.");
+                buildPrintMessage("~~~Error: Invalid statement, improper starting token.");
                 returnValue = false;
             }
             return returnValue;
@@ -194,27 +196,27 @@ namespace FlatPiler
                     newTokenSetup();
                     if (this.currentToken.match("right_paren"))
                     {
-                        print("Valid Print Statement Parsed.");
+                        buildPrintMessage("Valid Print Statement Parsed.");
                         returnValue = true;
                     }
                     else
                     {
                         this.errorCount++;
-                        print("~~~Error: Invalid print statement, right parenthesis expected, but not found.");
+                        buildPrintMessage("~~~Error: Invalid print statement, right parenthesis expected, but not found.");
                         returnValue = false;
                     }
                 }
                 else
                 {
                     this.errorCount++;
-                    print("~~~Error: Invalid print statement, expression not parsed properly.");
+                    buildPrintMessage("~~~Error: Invalid print statement, expression not parsed properly.");
                     returnValue = false;
                 }
             }
             else
             {
                 this.errorCount++;
-                print("~~~Error: Invalid print statement, left parenthesis not found.");
+                buildPrintMessage("~~~Error: Invalid print statement, left parenthesis not found.");
                 returnValue = false;
             }
             return returnValue;
@@ -230,20 +232,20 @@ namespace FlatPiler
                 this.wasSuccessful = parseExpr();
                 if (this.wasSuccessful)
                 {
-                    print("Valid Assignment Statement parsed.");
+                    buildPrintMessage("Valid Assignment Statement parsed.");
                     returnValue = true;
                 }
                 else
                 {
                     this.errorCount++;
-                    print("~~~Error: Invalid assignment statement, invalid expression.");
+                    buildPrintMessage("~~~Error: Invalid assignment statement, invalid expression.");
                     returnValue = false;
                 }
             }
             else
             {
                 this.errorCount++;
-                print("~~~Error: Invalid assignment statement, assignment operator missing.");
+                buildPrintMessage("~~~Error: Invalid assignment statement, assignment operator missing.");
                 returnValue = false;
             }
             return returnValue;
@@ -255,13 +257,13 @@ namespace FlatPiler
             Boolean returnValue;
             if (this.currentToken.match("var_id"))
             {
-                print("Valid Variable Declaration Statement parsed.");
+                buildPrintMessage("Valid Variable Declaration Statement parsed.");
                 returnValue = true;
             }
             else
             {
                 this.errorCount++;
-                print("~~~Error: Invalid variable declaration statement, invalid variable token.");
+                buildPrintMessage("~~~Error: Invalid variable declaration statement, invalid variable token.");
                 returnValue = false;
             }
             return returnValue;
@@ -278,20 +280,20 @@ namespace FlatPiler
                 this.wasSuccessful = parseBlock();
                 if (this.wasSuccessful)
                 {
-                    print("Valid While Statement parsed.");
+                    buildPrintMessage("Valid While Statement parsed.");
                     returnValue = true;
                 }
                 else
                 {
                     this.errorCount++;
-                    print("~~~Error: Invalid while statement, invalid block.");
+                    buildPrintMessage("~~~Error: Invalid while statement, invalid block.");
                     returnValue = false;
                 }
             }
             else
             {
                 this.errorCount++;
-                print("~~~Error: Invalid while statement, invalid boolean expression.");
+                buildPrintMessage("~~~Error: Invalid while statement, invalid boolean expression.");
                 returnValue = false;
             }
             return returnValue;
@@ -308,20 +310,20 @@ namespace FlatPiler
                 this.wasSuccessful = parseBlock();
                 if (this.wasSuccessful)
                 {
-                    print("Valid If Statement parsed");
+                    buildPrintMessage("Valid If Statement parsed");
                     returnValue = true;
                 }
                 else
                 {
                     this.errorCount++;
-                    print("~~~Error Invalid if statement, invalid block.");
+                    buildPrintMessage("~~~Error Invalid if statement, invalid block.");
                     returnValue = false;
                 }
             }
             else
             {
                 this.errorCount++;
-                print("~~~Error: Invalid if statement, invalid boolean expression.");
+                buildPrintMessage("~~~Error: Invalid if statement, invalid boolean expression.");
                 returnValue = false;
             }
             return returnValue;
@@ -350,7 +352,7 @@ namespace FlatPiler
             else
             {
                 this.errorCount++;
-                print("~~~Error: Invalid expression.");
+                buildPrintMessage("~~~Error: Invalid expression.");
                 returnValue = false;
             }
             return returnValue;
@@ -362,7 +364,7 @@ namespace FlatPiler
             Boolean returnValue;
             if (this.currentToken.match("plus_op"))
             {
-                print("-Parsing token: " + this.currentToken);
+                buildPrintMessage("-Parsing token: " + this.currentToken);
                 this.tokenIndex++;
                 returnValue = parseExpr();
             }
@@ -391,34 +393,34 @@ namespace FlatPiler
                             this.wasSuccessful = this.currentToken.match("right_paren");
                             if (this.wasSuccessful)
                             {
-                                print("Valid Boolean Expression parsed.");
+                                buildPrintMessage("Valid Boolean Expression parsed.");
                                 returnValue = true;
                             }
                             else
                             {
                                 this.errorCount++;
-                                print("~~~Error: Invalid boolean expression, right parenthesis not found.");
+                                buildPrintMessage("~~~Error: Invalid boolean expression, right parenthesis not found.");
                                 returnValue = false;
                             }
                         }
                         else
                         {
                             this.errorCount++;
-                            print("~~~Error: Invalid boolean expression, invalid token.");
+                            buildPrintMessage("~~~Error: Invalid boolean expression, invalid token.");
                             returnValue = false;
                         }
                     }
                     else
                     {
                         this.errorCount++;
-                        print("~~~Error: Invalid boolean expression, invalid boolean operator.");
+                        buildPrintMessage("~~~Error: Invalid boolean expression, invalid boolean operator.");
                         returnValue = false;
                     }
                 }
                 else
                 {
                     this.errorCount++;
-                    print("~~~Error: Invalid boolean expression, invalid token.");
+                    buildPrintMessage("~~~Error: Invalid boolean expression, invalid token.");
                     returnValue = false;
                 }
             }
@@ -429,7 +431,7 @@ namespace FlatPiler
             else
             {
                 this.errorCount++;
-                print("~~~Error Invalid boolean expression, invalid token.");
+                buildPrintMessage("~~~Error Invalid boolean expression, invalid token.");
                 returnValue = false;
             }
             return returnValue;
@@ -461,19 +463,24 @@ namespace FlatPiler
             if (checkTokensRemaining())
             {
                 this.currentToken = this.tokens[this.tokenIndex++];
-                print("-parsing token: " + this.currentToken);
+                buildPrintMessage("-parsing token: " + this.currentToken);
                 this.wasSuccessful = false;
             }
             else
             {
                 this.errorCount++;
-                print("~~~Error: Ran out of tokens when they were expected.");
+                buildPrintMessage("~~~Error: Ran out of tokens when they were expected.");
             }
         }
 
-        private void print(Object message)
+        private void buildPrintMessage(Object message)
         {
-            this.taOutput.Text += (Environment.NewLine + message);
+            this.outputString.Append(Environment.NewLine).Append(message);
+        }
+
+        private void print()
+        {
+            this.taOutput.Text += this.outputString;
         }
     }
 }

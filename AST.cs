@@ -11,6 +11,7 @@ namespace FlatPiler
     {
         public List<Token> tokens;
         private TextBox taOutput;
+        private StringBuilder outputString = new StringBuilder("");
         public Node root;
         private int tokenIndex = 0;
 
@@ -22,14 +23,15 @@ namespace FlatPiler
 
         public void buildAST()
         {
-            print("");
-            print("~~~Starting To Build AST.");
+            buildPrintMessage("");
+            buildPrintMessage("~~~Starting To Build AST.");
 
             this.root = new Node("Statement List");
             buildBlockTree(this.root);
 
-            print("~~~Ending AST Building." + Environment.NewLine + Environment.NewLine);
-            print(this.root.PrintPretty("", true, ""));
+            buildPrintMessage("~~~Ending AST Building." + Environment.NewLine + Environment.NewLine);
+            buildPrintMessage(this.root.PrintPretty("", true, ""));
+            print();
         }
 
         private void buildBlockTree(Node root)
@@ -63,28 +65,28 @@ namespace FlatPiler
             Token currentToken = this.tokens[this.tokenIndex];
             if (currentToken.match("print"))
             {
-                print("--Building Print Node.");
+                buildPrintMessage("--Building Print Node.");
                 Node printNode = new Node("Print");
                 buildPrintStatementTree(printNode);
                 root.addChild(printNode);
             }
             else if (currentToken.match("var_id"))
             {
-                print("--Building Assignment Node.");
+                buildPrintMessage("--Building Assignment Node.");
                 Node assignmentNode = new Node("Assignment");
                 buildAssignmentStatementTree(assignmentNode);
                 root.addChild(assignmentNode);
             }
             else if (currentToken.match("int") || currentToken.match("string") || currentToken.match("boolean")) 
             {
-                print("--Building Variable Declaration Node.");
+                buildPrintMessage("--Building Variable Declaration Node.");
                 Node varDeclNode = new Node("Variable Declaration");
                 buildVarDeclTree(varDeclNode);
                 root.addChild(varDeclNode);
             }
             else if (currentToken.match("while"))
             {
-                print("--Building While Node.");
+                buildPrintMessage("--Building While Node.");
                 Node whileNode = new Node("While");
                 // Skip while token.
                 this.tokenIndex++;
@@ -98,7 +100,7 @@ namespace FlatPiler
             }
             else if (currentToken.match("if"))
             {
-                print("--Building If Node.");
+                buildPrintMessage("--Building If Node.");
                 Node ifNode = new Node("If");
                 // Skip if token.
                 this.tokenIndex++;
@@ -112,7 +114,7 @@ namespace FlatPiler
             }
             else if (currentToken.match("left_brace"))
             {
-                print("--Building Block Node.");
+                buildPrintMessage("--Building Block Node.");
                 Node blockNode = new Node("Statement List");
                 buildBlockTree(blockNode);
                 root.addChild(blockNode);
@@ -207,11 +209,11 @@ namespace FlatPiler
                 Token boolOpToken = this.tokens[this.tokenIndex++];
                 if (boolOpToken.match("boolop_equal"))
                 {
-                    print("--Building Boolean Operator Equal Node");
+                    buildPrintMessage("--Building Boolean Operator Equal Node");
                 }
                 else
                 {
-                    print("--Building Boolean Operator Not Equal Node");
+                    buildPrintMessage("--Building Boolean Operator Not Equal Node");
                 }
                 Node boolOpNode = new Node(boolOpToken.value);
 
@@ -237,9 +239,14 @@ namespace FlatPiler
             root.addChild(valueNode);
         }
 
-        private void print(Object message)
+        private void buildPrintMessage(Object message)
         {
-            this.taOutput.Text += (Environment.NewLine + message);
+            this.outputString.Append(Environment.NewLine).Append(message);
+        }
+
+        private void print()
+        {
+            this.taOutput.Text += this.outputString;
         }
     }
 }

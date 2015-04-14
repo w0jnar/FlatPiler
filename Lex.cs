@@ -20,6 +20,7 @@ namespace FlatPiler
         private static List<string> stringsToCheck = new List<string>() { "int", "string", "boolean", "print", "if", "while", "false", "true" };
 
         public string inputString;
+        private StringBuilder outputString = new StringBuilder("");
         private TextBox taOutput;
         public List<Token> tokens = new List<Token>();
         public int errorCount = 0;
@@ -35,7 +36,7 @@ namespace FlatPiler
             if (this.inputString.Length == 0)
             {
                 this.errorCount++;
-                print("~~~Error, this program is empty.");
+                buildPrintMessage("~~~Error, this program is empty.");
             }
             else
             {
@@ -45,18 +46,18 @@ namespace FlatPiler
                     if (this.errorCount == 0)
                     {
                         currentChar = this.inputString[i];
-                        this.taOutput.Text += (Environment.NewLine + "symbol: \"" + currentChar + "\"");
+                        buildPrintMessage("symbol: \"" + currentChar + "\"");
                         if (isWhiteSpace.Match(currentChar.ToString()).Success)
                         {
                         }
                         else if (isDigit.IsMatch(currentChar.ToString()))
                         {
-                            print("-num: " + currentChar.ToString());
+                            buildPrintMessage("-num: " + currentChar.ToString());
                             createToken(currentChar, "digit");
                         }
                         else if (isChar.IsMatch(currentChar.ToString()) && !isChar.IsMatch(getNextChar(i)))
                         {
-                            print("-id: " + currentChar.ToString());
+                            buildPrintMessage("-id: " + currentChar.ToString());
                             createToken(currentChar, "var_id");
                         }
                         else if (isBrace.IsMatch(currentChar.ToString()))
@@ -74,7 +75,7 @@ namespace FlatPiler
                                 if (!lastToken.type.Equals("var_id"))
                                 {
                                     i += lastToken.value.Length - 1;
-                                    print("-word: " + lastToken.value);
+                                    buildPrintMessage("-word: " + lastToken.value);
                                 }
                                 else {
                                     i += this.tokens.Count - offset - 1;
@@ -98,39 +99,40 @@ namespace FlatPiler
                         }
                         else if (currentChar.Equals('+'))
                         {
-                            print("-plus_op: +");
+                            buildPrintMessage("-plus_op: +");
                             createToken("+", "plus_op");
                         }
                         else if (currentChar.Equals('$'))
                         {
-                            print("-eof: $");
+                            buildPrintMessage("-eof: $");
                             createToken("$", "end_of_file");
                             if (i != this.inputString.Length - 1)
                             {
-                                print("~~~Warning, there is code after the EOF character is reached.");
+                                buildPrintMessage("~~~Warning, there is code after the EOF character is reached.");
                             }
                         }
                         else
                         {
                             this.errorCount++;
-                            print("~~~Error: " + currentChar + " is not valid");
+                            buildPrintMessage("~~~Error: " + currentChar + " is not valid");
                         }
                     }
                     else
                     {
-                        print("There was an error, execution stopped.");
+                        buildPrintMessage("There was an error, execution stopped.");
                         i = this.inputString.Length;
                     }
                 }
                 if (!(this.tokens[(this.tokens.Count - 1)]).type.Equals("end_of_file") && this.errorCount == 0)
                 {
-                    print("~~~Warning, end of file is reached before an EOF character, appending one now.");
+                    buildPrintMessage("~~~Warning, end of file is reached before an EOF character, appending one now.");
                     createToken("$", "end_of_file");
                 }
 
                 if (this.errorCount == 0)
                 {
-                    print("---Lex Finished Successfully. Nice!");
+                    buildPrintMessage("---Lex Finished Successfully. Nice!");
+                    print();
                 }
             }
         }
@@ -164,7 +166,7 @@ namespace FlatPiler
 
             while (!canEscape)
             {
-                print(suspectKeyword);
+                buildPrintMessage(suspectKeyword);
 
 
                 if (!stringsToCheck[0].StartsWith(suspectKeyword.ToString())
@@ -232,7 +234,7 @@ namespace FlatPiler
             }
             else
             {
-                print("-id: " + suspectKeyword[0]);
+                buildPrintMessage("-id: " + suspectKeyword[0]);
                 createToken(suspectKeyword[0], "var_id");
             }
         }
@@ -255,7 +257,7 @@ namespace FlatPiler
             {
                 createToken(braceChar, "right_brace");
             }
-            print("-brace: " + braceChar);
+            buildPrintMessage("-brace: " + braceChar);
         }
 
         private int matchString(int index)
@@ -267,18 +269,18 @@ namespace FlatPiler
             {
                 string currentString = match.Value;
                 createToken(currentString, "string");
-                print("-string: " + currentString);
+                buildPrintMessage("-string: " + currentString);
                 offset = currentString.Length;
             }
             else if (badMatch.Success)
             {
                 this.errorCount++;
-                print("~~~Error: Invalid character Found in string.");
+                buildPrintMessage("~~~Error: Invalid character Found in string.");
             }
             else
             {
                 this.errorCount++;
-                print("~~~Error: End of execution reached before string end or invalid non capital character found.");
+                buildPrintMessage("~~~Error: End of execution reached before string end or invalid non capital character found.");
             }
             return offset;
         }
@@ -290,13 +292,13 @@ namespace FlatPiler
             if (nextChar.Equals("="))
             {
                 createToken("==", "boolop_equal");
-                print("-boolop_equal: ==");
+                buildPrintMessage("-boolop_equal: ==");
                 offset++;
             }
             else
             {
                 createToken("=", "assignment_op");
-                print("-assignment_op: =");
+                buildPrintMessage("-assignment_op: =");
             }
             return offset;
         }
@@ -308,20 +310,25 @@ namespace FlatPiler
             if (nextChar.Equals("="))
             {
                 createToken("!=", "boolop_not_equal");
-                print("-boolop_not_equal: !=");
+                buildPrintMessage("-boolop_not_equal: !=");
                 offset++;
             }
             else
             {
                 this.errorCount++;
-                print("~~~Error: Invalid character after a !.");
+                buildPrintMessage("~~~Error: Invalid character after an !.");
             }
             return offset;
         }
 
-        private void print(Object message)
+        private void buildPrintMessage(Object message)
         {
-            this.taOutput.Text += (Environment.NewLine + message);
+            this.outputString.Append(Environment.NewLine).Append(message);
+        }
+
+        private void print()
+        {
+            this.taOutput.Text += this.outputString;
         }
 
         private void createToken(Object symbol, string name)
@@ -333,7 +340,7 @@ namespace FlatPiler
         {
             for (int i = 0; i < this.tokens.Count; i++)
             {
-                print(this.tokens[i]);
+                buildPrintMessage(this.tokens[i]);
             }
         }
     }

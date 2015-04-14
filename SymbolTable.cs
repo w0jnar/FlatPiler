@@ -16,6 +16,7 @@ namespace FlatPiler
 
         private Node astRoot;
         private TextBox taOutput;
+        private StringBuilder outputString = new StringBuilder("");
         private List<ScopeNode> scopes = new List<ScopeNode>();
         private int currentScope = -1;
         public int errorCount = 0;
@@ -28,18 +29,19 @@ namespace FlatPiler
 
         public void generateSymbolTable()
         {
-            print("");
-            print("~~~Starting To Generate Symbol Table.");
+            buildPrintMessage("");
+            buildPrintMessage("~~~Starting To Generate Symbol Table.");
             generateBlock(this.astRoot);
-            print("");
+            buildPrintMessage("");
             if (this.errorCount == 0)
             {
-                print("~~~Generation of Symbol Table finished successfully. Nice!");
+                buildPrintMessage("~~~Generation of Symbol Table finished successfully. Nice!");
             }
             else
             {
-                print("~~~Generation of Symbol Table fail. Check errors.");
+                buildPrintMessage("~~~Generation of Symbol Table fail. Check errors.");
             }
+            print();
         }
 
         private void generateBlock(Node root)
@@ -50,7 +52,7 @@ namespace FlatPiler
             }
             this.scopes.Add(new ScopeNode(this.scopes.Count, this.currentScope));
             this.currentScope = this.scopes[this.scopes.Count - 1].scopeId;
-            print("~~~New Scope " + this.currentScope + " opened.");
+            buildPrintMessage("~~~New Scope " + this.currentScope + " opened.");
             for (int i = 0; i < root.children.Count; i++)
             {
                 if (root.children[i].name == "Statement List")
@@ -67,7 +69,7 @@ namespace FlatPiler
                 }
                 else if (root.children[i].name == "Print")
                 {
-                    generatePrint(root.children[i]);
+                    generatebuildPrintMessage(root.children[i]);
                 }
                 else if (root.children[i].name == "While" || root.children[i].name == "If")
                 {
@@ -82,28 +84,28 @@ namespace FlatPiler
 
             if (this.errorCount == 0)
             {
-                print("~~~Closing scope " + this.currentScope + ".");
+                buildPrintMessage("~~~Closing scope " + this.currentScope + ".");
                 if (this.scopes[this.currentScope].scopeMembers.Count > 0)
                 {
-                    print("~~~Scope contained:");
+                    buildPrintMessage("~~~Scope contained:");
                     ScopeElement currentScopeElement;
                     for (int i = 0; i < this.scopes[this.currentScope].scopeMembers.Count; i++)
                     {
                         currentScopeElement = this.scopes[this.currentScope].scopeMembers[i];
-                        print(currentScopeElement);
+                        buildPrintMessage(currentScopeElement);
                         if (!currentScopeElement.isUsed && !currentScopeElement.isInitialized)
                         {
-                            print("~~~Warning, id " + currentScopeElement.id + " is declared but not initialized or used.");
+                            buildPrintMessage("~~~Warning, id " + currentScopeElement.id + " is declared but not initialized or used.");
                         }
                         else if (!currentScopeElement.isUsed && currentScopeElement.isInitialized)
                         {
-                            print("~~~Warning, id " + currentScopeElement.id + " is declared and initialized, but not used.");
+                            buildPrintMessage("~~~Warning, id " + currentScopeElement.id + " is declared and initialized, but not used.");
                         }
                     }
                 }
                 else
                 {
-                    print("~~~Scope did not contain any ids.");
+                    buildPrintMessage("~~~Scope did not contain any ids.");
                 }
                 this.currentScope = this.scopes[this.currentScope].parentId;
             }
@@ -119,11 +121,11 @@ namespace FlatPiler
             {
                 ScopeNode currentScope = this.scopes[this.currentScope];
                 currentScope.scopeMembers.Add(new ScopeElement(type, id));
-                print("id: " + id + " created in scope " + this.currentScope + ".");
+                buildPrintMessage("id: " + id + " created in scope " + this.currentScope + ".");
             }
             else
             {
-                print("~~~Error: id " + id + " already exists in scope " + this.currentScope + ".");
+                buildPrintMessage("~~~Error: id " + id + " already exists in scope " + this.currentScope + ".");
                 this.errorCount++;
             }
         }
@@ -145,22 +147,22 @@ namespace FlatPiler
                 {
                     idToModify.value = exprValues[1];
                     idToModify.isInitialized = true;
-                    print("id: " + idNode.name + " assigned " + exprValues[1].ToString() + ".");
+                    buildPrintMessage("id: " + idNode.name + " assigned " + exprValues[1].ToString() + ".");
                 }
                 else
                 {
-                    print("~~~Error: id " + idNode.name + " is does not match the type of the expression being assigned.");
+                    buildPrintMessage("~~~Error: id " + idNode.name + " is does not match the type of the expression being assigned.");
                     this.errorCount++;
                 }
             }
             else
             {
-                print("~~~Error: id " + idNode.name + " is not declared in its scope or any parent scope.");
+                buildPrintMessage("~~~Error: id " + idNode.name + " is not declared in its scope or any parent scope.");
                 this.errorCount++;
             }
         }
 
-        private void generatePrint(Node root)
+        private void generatebuildPrintMessage(Node root)
         {
             generateExpr(root.children[0]);
         }
@@ -205,13 +207,13 @@ namespace FlatPiler
                     idToUse.isUsed = true;
                     if (!idToUse.isInitialized)
                     {
-                        print("~~~Warning, id " + root.name + " is used without being initialized.");
+                        buildPrintMessage("~~~Warning, id " + root.name + " is used without being initialized.");
                     }
                     returnValues = new List<Object>() { idToUse.type, idToUse.value };
                 }
                 else
                 {
-                    print("~~~Error: id " + root.name + " is not declared in its scope or any parent scope.");
+                    buildPrintMessage("~~~Error: id " + root.name + " is not declared in its scope or any parent scope.");
                     this.errorCount++;
                     returnValues = new List<Object>() { "error", "You've met with a terrible fate, haven't you?" };
                 }
@@ -242,7 +244,7 @@ namespace FlatPiler
                 string rightType = rightExpr[0].ToString();
                 if (leftType != rightType)
                 {
-                    print("~~~ERROR: Invalid Boolean Expression, types do not match.");
+                    buildPrintMessage("~~~ERROR: Invalid Boolean Expression, types do not match.");
                     this.errorCount++;
                     returnType = "error";
                     returnBoolean = "You've met with a terrible fate, haven't you?";
@@ -285,7 +287,7 @@ namespace FlatPiler
             }
             else
             {
-                print("~~~ERROR: Invalid Int Expression, types do not match.");
+                buildPrintMessage("~~~ERROR: Invalid Int Expression, types do not match.");
                 this.errorCount++;
                 returnType = "error";
                 returnValue = -1;
@@ -343,9 +345,14 @@ namespace FlatPiler
             return new List<int>() { scopeIndex, locationInScope };
         }
 
-        private void print(Object message)
+        private void buildPrintMessage(Object message)
         {
-            this.taOutput.Text += (Environment.NewLine + message);
+            this.outputString.Append(Environment.NewLine).Append(message);
+        }
+
+        private void print()
+        {
+            this.taOutput.Text += this.outputString;
         }
     }
 
