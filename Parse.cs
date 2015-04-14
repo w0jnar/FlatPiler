@@ -7,20 +7,18 @@ using System.Windows.Forms;
 
 namespace FlatPiler
 {
-    class Parse
+    class Parse : CompilerElement
     {
         public List<Token> tokens;
-        private TextBox taOutput;
-        private StringBuilder outputString = new StringBuilder("");
         public int errorCount = 0;
         private int tokenIndex = 0;
         private Token currentToken;
         private Boolean wasSuccessful;
 
         public Parse(List<Token> tokens, TextBox taOutput)
+            : base(taOutput)
         {
             this.tokens = tokens;
-            this.taOutput = taOutput;
         }
 
         public void parseProgram()
@@ -471,16 +469,6 @@ namespace FlatPiler
                 this.errorCount++;
                 buildPrintMessage("~~~Error: Ran out of tokens when they were expected.");
             }
-        }
-
-        private void buildPrintMessage(Object message)
-        {
-            this.outputString.Append(Environment.NewLine).Append(message);
-        }
-
-        private void print()
-        {
-            this.taOutput.Text += this.outputString;
         }
     }
 }

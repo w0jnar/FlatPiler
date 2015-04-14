@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace FlatPiler
 {
-    class Lex
+    class Lex : CompilerElement
     {
         private static Regex isDigit = new Regex("^[0-9]$");
         private static Regex isChar = new Regex("^[a-z]$");
@@ -20,15 +20,13 @@ namespace FlatPiler
         private static List<string> stringsToCheck = new List<string>() { "int", "string", "boolean", "print", "if", "while", "false", "true" };
 
         public string inputString;
-        private StringBuilder outputString = new StringBuilder("");
-        private TextBox taOutput;
         public List<Token> tokens = new List<Token>();
         public int errorCount = 0;
 
         public Lex(string inputString, TextBox taOutput)
+            : base(taOutput)
         {
             this.inputString = inputString;
-            this.taOutput = taOutput;
         }
 
         public void analysis()
@@ -77,7 +75,8 @@ namespace FlatPiler
                                     i += lastToken.value.Length - 1;
                                     buildPrintMessage("-word: " + lastToken.value);
                                 }
-                                else {
+                                else
+                                {
                                     i += this.tokens.Count - offset - 1;
                                 }
                             }
@@ -319,16 +318,6 @@ namespace FlatPiler
                 buildPrintMessage("~~~Error: Invalid character after an !.");
             }
             return offset;
-        }
-
-        private void buildPrintMessage(Object message)
-        {
-            this.outputString.Append(Environment.NewLine).Append(message);
-        }
-
-        private void print()
-        {
-            this.taOutput.Text += this.outputString;
         }
 
         private void createToken(Object symbol, string name)

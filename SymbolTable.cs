@@ -8,23 +8,21 @@ using System.Windows.Forms;
 
 namespace FlatPiler
 {
-    class SymbolTable
+    class SymbolTable : CompilerElement
     {
         private static Regex isDigit = new Regex("^[0-9]$");
         private static Regex isString = new Regex("\"[a-z ]*\"");
         private static Regex isChar = new Regex("^[a-z]$");
 
         private Node astRoot;
-        private TextBox taOutput;
-        private StringBuilder outputString = new StringBuilder("");
         private List<ScopeNode> scopes = new List<ScopeNode>();
         private int currentScope = -1;
         public int errorCount = 0;
 
         public SymbolTable(Node astRoot, TextBox taOutput)
+            : base(taOutput)
         {
             this.astRoot = astRoot;
-            this.taOutput = taOutput;
         }
 
         public void generateSymbolTable()
@@ -343,16 +341,6 @@ namespace FlatPiler
                 }
             }
             return new List<int>() { scopeIndex, locationInScope };
-        }
-
-        private void buildPrintMessage(Object message)
-        {
-            this.outputString.Append(Environment.NewLine).Append(message);
-        }
-
-        private void print()
-        {
-            this.taOutput.Text += this.outputString;
         }
     }
 

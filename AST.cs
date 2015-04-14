@@ -7,18 +7,16 @@ using System.Windows.Forms;
 
 namespace FlatPiler
 {
-    class AST
+    class AST : CompilerElement
     {
         public List<Token> tokens;
-        private TextBox taOutput;
-        private StringBuilder outputString = new StringBuilder("");
         public Node root;
         private int tokenIndex = 0;
 
         public AST(List<Token> tokens, TextBox taOutput)
+            : base(taOutput)
         {
             this.tokens = tokens;
-            this.taOutput = taOutput;
         }
 
         public void buildAST()
@@ -77,7 +75,7 @@ namespace FlatPiler
                 buildAssignmentStatementTree(assignmentNode);
                 root.addChild(assignmentNode);
             }
-            else if (currentToken.match("int") || currentToken.match("string") || currentToken.match("boolean")) 
+            else if (currentToken.match("int") || currentToken.match("string") || currentToken.match("boolean"))
             {
                 buildPrintMessage("--Building Variable Declaration Node.");
                 Node varDeclNode = new Node("Variable Declaration");
@@ -197,7 +195,7 @@ namespace FlatPiler
         private void buildBoolExprTree(Node root)
         {
             Token currentToken = this.tokens[this.tokenIndex];
-            if(currentToken.match("left_paren")) 
+            if (currentToken.match("left_paren"))
             {
                 // Skip left paren.
                 this.tokenIndex++;
@@ -226,7 +224,7 @@ namespace FlatPiler
                 // Skip right paren.
                 this.tokenIndex++;
             }
-            else 
+            else
             {
                 buildEndNode(root);
             }
@@ -237,16 +235,6 @@ namespace FlatPiler
             Token currentToken = this.tokens[this.tokenIndex++];
             Node valueNode = new Node(currentToken.value);
             root.addChild(valueNode);
-        }
-
-        private void buildPrintMessage(Object message)
-        {
-            this.outputString.Append(Environment.NewLine).Append(message);
-        }
-
-        private void print()
-        {
-            this.taOutput.Text += this.outputString;
         }
     }
 }

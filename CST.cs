@@ -7,18 +7,16 @@ using System.Windows.Forms;
 
 namespace FlatPiler
 {
-    class CST
+    class CST : CompilerElement
     {
         public List<Token> tokens;
-        private TextBox taOutput;
-        private StringBuilder outputString = new StringBuilder("");
         public Node root;
         private int tokenIndex = 0;
 
         public CST(List<Token> tokens, TextBox taOutput)
+            : base(taOutput)
         {
             this.tokens = tokens;
-            this.taOutput = taOutput;
         }
 
         public void buildCST()
@@ -95,14 +93,14 @@ namespace FlatPiler
                 buildPrintStatementTree(printStatementNode);
                 root.addChild(printStatementNode);
             }
-            else if(currentToken.match("var_id"))
+            else if (currentToken.match("var_id"))
             {
                 buildPrintMessage("--Building Assignment Statement Node.");
                 Node assignmentStatementNode = new Node("Assignment Statement");
                 buildAssignmentStatementTree(assignmentStatementNode);
                 root.addChild(assignmentStatementNode);
             }
-            else if (currentToken.match("int") || currentToken.match("string") || currentToken.match("boolean")) 
+            else if (currentToken.match("int") || currentToken.match("string") || currentToken.match("boolean"))
             {
                 buildPrintMessage("--Building Variable Declaration Statement Node.");
                 Node varDeclNode = new Node("Variable Declaration Statement");
@@ -156,7 +154,7 @@ namespace FlatPiler
             this.tokenIndex++;
         }
 
-        private void buildAssignmentStatementTree(Node root) 
+        private void buildAssignmentStatementTree(Node root)
         {
             buildPrintMessage("--Building Id Node.");
             Node idExprNode = new Node("Id");
@@ -174,7 +172,7 @@ namespace FlatPiler
             root.addChild(exprNode);
         }
 
-        private void buildVarDeclStatementTree(Node root) 
+        private void buildVarDeclStatementTree(Node root)
         {
             buildPrintMessage("--Building Type Node.");
             buildEndNode(root);
@@ -185,7 +183,7 @@ namespace FlatPiler
             root.addChild(idExprNode);
         }
 
-        private void buildWhileIfStatementTree(Node root) 
+        private void buildWhileIfStatementTree(Node root)
         {
             Token currentToken = this.tokens[this.tokenIndex++];
             Node whileIfNode = new Node(currentToken.value);
@@ -260,7 +258,7 @@ namespace FlatPiler
 
                 root.addChild(intOpNode);
             }
-            else 
+            else
             {
                 root.addChild(digitNode);
             }
@@ -334,16 +332,6 @@ namespace FlatPiler
             Token currentToken = this.tokens[this.tokenIndex++];
             Node digitValueNode = new Node(currentToken.value);
             root.addChild(digitValueNode);
-        }
-
-        private void buildPrintMessage(Object message)
-        {
-            this.outputString.Append(Environment.NewLine).Append(message);
-        }
-
-        private void print()
-        {
-            this.taOutput.Text += this.outputString;
         }
     }
 }
