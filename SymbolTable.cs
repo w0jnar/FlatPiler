@@ -37,7 +37,7 @@ namespace FlatPiler
             }
             else
             {
-                buildPrintMessage("~~~Generation of Symbol Table fail. Check errors.");
+                buildPrintMessage("~~~Generation of Symbol Table failed. Check errors.");
             }
             print();
         }
@@ -147,9 +147,9 @@ namespace FlatPiler
                     idToModify.isInitialized = true;
                     buildPrintMessage("id: " + idNode.name + " assigned " + exprValues[1].ToString() + ".");
                 }
-                else
+                else if (exprType != "error")
                 {
-                    buildPrintMessage("~~~Error: id " + idNode.name + " is does not match the type of the expression being assigned.");
+                    buildPrintMessage("~~~Error: id " + idNode.name + " of type " + idToModify.type + " is does not match the type of the expression: " + exprType + ".");
                     this.errorCount++;
                 }
             }
@@ -368,7 +368,7 @@ namespace FlatPiler
         public string id;
         public Boolean isInitialized = false;
         public Boolean isUsed = false;
-        public Object value;
+        public Object value = "undefined";
 
         public ScopeElement(string type, string id)
         {
