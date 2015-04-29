@@ -9,8 +9,8 @@ namespace FlatPiler
 {
     class Parse : CompilerElement
     {
-        public List<Token> tokens;
-        public int errorCount = 0;
+        private List<Token> tokens;
+        public int errorCount { get; private set; }
         private int tokenIndex = 0;
         private Token currentToken;
         private Boolean wasSuccessful;
@@ -19,6 +19,7 @@ namespace FlatPiler
             : base(taOutput)
         {
             this.tokens = tokens;
+            this.errorCount = 0;
         }
 
         public void parseProgram()

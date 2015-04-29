@@ -19,14 +19,16 @@ namespace FlatPiler
 
         private static List<string> stringsToCheck = new List<string>() { "int", "string", "boolean", "print", "if", "while", "false", "true" };
 
-        public string inputString;
-        public List<Token> tokens = new List<Token>();
-        public int errorCount = 0;
+        private string inputString;
+        public List<Token> tokens { get; private set; }
+        public int errorCount { get; private set; }
 
         public Lex(string inputString, TextBox taOutput)
             : base(taOutput)
         {
             this.inputString = inputString;
+            this.tokens = new List<Token>();
+            this.errorCount = 0;
         }
 
         public void analysis()
@@ -335,8 +337,8 @@ namespace FlatPiler
     }
     class Token
     {
-        public string type;
-        public string value;
+        public string type { get; private set; }
+        public string value { get; private set; }
 
         public Token(string token, string type)
         {

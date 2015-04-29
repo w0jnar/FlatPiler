@@ -17,12 +17,13 @@ namespace FlatPiler
         private Node astRoot;
         private List<ScopeNode> scopes = new List<ScopeNode>();
         private int currentScope = -1;
-        public int errorCount = 0;
+        public int errorCount { get; private set; }
 
         public SymbolTable(Node astRoot, TextBox taOutput)
             : base(taOutput)
         {
             this.astRoot = astRoot;
+            this.errorCount = 0;
         }
 
         public void generateSymbolTable()

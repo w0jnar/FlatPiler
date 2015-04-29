@@ -41,6 +41,11 @@ namespace FlatPiler
 
                     SymbolTable symbolTable = new SymbolTable(ast.root, taOutput);
                     symbolTable.generateSymbolTable();
+
+                    if (symbolTable.errorCount == 0)
+                    {
+
+                    }
                 }
             }
         }

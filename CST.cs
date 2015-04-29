@@ -9,8 +9,8 @@ namespace FlatPiler
 {
     class CST : CompilerElement
     {
-        public List<Token> tokens;
-        public Node root;
+        private List<Token> tokens;
+        private Node root;
         private int tokenIndex = 0;
 
         public CST(List<Token> tokens, TextBox taOutput)

@@ -10,12 +10,13 @@ namespace FlatPiler
 {
     class Node
     {
-        public string name;
-        public List<Node> children = new List<Node>();
+        public string name { get; private set; }
+        public List<Node> children { get; private set; }
 
         public Node(string name)
         {
             this.name = name;
+            this.children = new List<Node>();
         }
 
         public void addChild(Node child)
