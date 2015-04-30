@@ -15,7 +15,7 @@ namespace FlatPiler
         private static Regex isChar = new Regex("^[a-z]$");
 
         private Node astRoot;
-        private List<ScopeNode> scopes = new List<ScopeNode>();
+        public List<ScopeNode> scopes { get; private set; }
         private int currentScope = -1;
         public int errorCount { get; private set; }
 
@@ -24,6 +24,7 @@ namespace FlatPiler
         {
             this.astRoot = astRoot;
             this.errorCount = 0;
+            this.scopes = new List<ScopeNode>();
         }
 
         public void generateSymbolTable()
@@ -134,19 +135,19 @@ namespace FlatPiler
             Node assignOpNode = root.children[0];
             Node idNode = assignOpNode.children[0];
             Node valueNode = assignOpNode.children[1];
-            List<int> scopeLocations = findScope(idNode.name);
-            int scopeIndex = scopeLocations[0];
-            int locationInScope = scopeLocations[1];
+            Tuple<int, int> scopeLocations = findScope(idNode.name);
+            int scopeIndex = scopeLocations.Item1;
+            int locationInScope = scopeLocations.Item2;
             if (scopeIndex != -1 && locationInScope != -1)
             {
                 ScopeElement idToModify = this.scopes[scopeIndex].scopeMembers[locationInScope];
-                List<Object> exprValues = generateExpr(valueNode);
-                String exprType = exprValues[0].ToString();
+                Tuple<string, Object> exprValues = generateExpr(valueNode);
+                String exprType = exprValues.Item1.ToString();
                 if (exprType == idToModify.type)
                 {
-                    idToModify.value = exprValues[1];
+                    idToModify.value = exprValues.Item2;
                     idToModify.isInitialized = true;
-                    buildPrintMessage("id: " + idNode.name + " assigned " + exprValues[1].ToString() + ".");
+                    buildPrintMessage("id: " + idNode.name + " assigned " + exprValues.Item2.ToString() + ".");
                 }
                 else if (exprType != "error")
                 {
@@ -168,20 +169,20 @@ namespace FlatPiler
 
         private void generateWhileIf(Node root)
         {
-            List<Object> booleanExprList = generateBooleanExpr(root.children[0]);
-            if (booleanExprList[0].ToString() == "boolean")
+            Tuple<string, Object> booleanExprList = generateBooleanExpr(root.children[0]);
+            if (booleanExprList.Item1.ToString() == "boolean")
             {
                 generateBlock(root.children[1]);
             }
             // No else case, as any error for booleanExpr's will already be printed.
         }
 
-        private List<Object> generateExpr(Node root)
+        private Tuple<string, Object> generateExpr(Node root)
         {
-            List<Object> returnValues;
+            Tuple<string, Object> returnValues;
             if (isDigit.IsMatch(root.name))
             {
-                returnValues = new List<object>() { "int", Int32.Parse(root.name) };
+                returnValues = new Tuple<string, Object>("int", Int32.Parse(root.name));
             }
             else if (root.name == "==" || root.name == "!=" || root.name == "false" || root.name == "true")
             {
@@ -189,7 +190,7 @@ namespace FlatPiler
             }
             else if (isString.IsMatch(root.name))
             {
-                returnValues = new List<object>() { "string", root.name };
+                returnValues = new Tuple<string, Object>("string", root.name);
             }
             else if (root.name == "+")
             {
@@ -197,9 +198,9 @@ namespace FlatPiler
             }
             else if (isChar.IsMatch(root.name))
             {
-                List<int> scopeLocations = findScope(root.name);
-                int scopeIndex = scopeLocations[0];
-                int locationInScope = scopeLocations[1];
+                Tuple<int, int> scopeLocations = findScope(root.name);
+                int scopeIndex = scopeLocations.Item1;
+                int locationInScope = scopeLocations.Item2;
                 if (scopeIndex != -1 && locationInScope != -1)
                 {
                     ScopeElement idToUse = this.scopes[scopeIndex].scopeMembers[locationInScope];
@@ -208,13 +209,13 @@ namespace FlatPiler
                     {
                         buildPrintMessage("~~~Warning, id " + root.name + " is used without being initialized.");
                     }
-                    returnValues = new List<Object>() { idToUse.type, idToUse.value };
+                    returnValues = new Tuple<string, Object>(idToUse.type, idToUse.value);
                 }
                 else
                 {
                     buildPrintMessage("~~~Error: id " + root.name + " is not declared in its scope or any parent scope.");
                     this.errorCount++;
-                    returnValues = new List<Object>() { "error", "You've met with a terrible fate, haven't you?" };
+                    returnValues = new Tuple<string, Object>("error", "You've met with a terrible fate, haven't you?");
                 }
             }
             else
@@ -222,12 +223,12 @@ namespace FlatPiler
                 // Should be impossible to reach when this function is finished, but I felt having detailed
                 // if/else blocks was more desirable than letting whatever the end branch was going to else.
                 this.errorCount++;
-                returnValues = new List<Object>() { "error", "You've met with a terrible fate, haven't you?" };
+                returnValues = new Tuple<string, Object>("error", "You've met with a terrible fate, haven't you?");
             }
             return returnValues;
         }
 
-        private List<Object> generateBooleanExpr(Node root)
+        private Tuple<string, Object> generateBooleanExpr(Node root)
         {
             string returnType = "boolean";
             string returnBoolean;
@@ -237,10 +238,10 @@ namespace FlatPiler
             }
             else
             {
-                List<Object> leftExpr = generateExpr(root.children[0]);
-                List<Object> rightExpr = generateExpr(root.children[1]);
-                string leftType = leftExpr[0].ToString();
-                string rightType = rightExpr[0].ToString();
+                Tuple<string, Object> leftExpr = generateExpr(root.children[0]);
+                Tuple<string, Object> rightExpr = generateExpr(root.children[1]);
+                string leftType = leftExpr.Item1.ToString();
+                string rightType = rightExpr.Item1.ToString();
                 if (leftType != rightType)
                 {
                     buildPrintMessage("~~~ERROR: Invalid Boolean Expression, types do not match.");
@@ -250,11 +251,11 @@ namespace FlatPiler
                 }
                 else if (root.name == "==")
                 {
-                    returnBoolean = (leftExpr[1].ToString() == rightExpr[1].ToString()).ToString();
+                    returnBoolean = (leftExpr.Item2.ToString() == rightExpr.Item2.ToString()).ToString();
                 }
                 else if (root.name == "!=")
                 {
-                    returnBoolean = (leftExpr[1].ToString() != rightExpr[1].ToString()).ToString();
+                    returnBoolean = (leftExpr.Item2.ToString() != rightExpr.Item2.ToString()).ToString();
                 }
                 else
                 {
@@ -263,22 +264,22 @@ namespace FlatPiler
                     returnBoolean = "You've met with a terrible fate, haven't you?";
                 }
             }
-            return new List<Object>() { returnType, returnBoolean.ToLower() };
+            return new Tuple<string, Object>(returnType, returnBoolean.ToLower());
         }
 
-        private List<Object> generateIntExpr(Node root)
+        private Tuple<string, Object> generateIntExpr(Node root)
         {
             string returnType = "int";
             int returnValue;
             // Digit.
-            List<Object> leftExpr = generateExpr(root.children[0]);
+            Tuple<string, Object> leftExpr = generateExpr(root.children[0]);
             // Expr.
-            List<Object> rightExpr = generateExpr(root.children[1]);
-            if (leftExpr[0].ToString() == "int" && rightExpr[0].ToString() == "int")
+            Tuple<string, Object> rightExpr = generateExpr(root.children[1]);
+            if (leftExpr.Item1.ToString() == "int" && rightExpr.Item1.ToString() == "int")
             {
-                returnValue = (int)leftExpr[1] + (int)rightExpr[1];
+                returnValue = (int)leftExpr.Item2 + (int)rightExpr.Item2;
             }
-            else if (rightExpr[0].ToString() == "error")
+            else if (rightExpr.Item1.ToString() == "error")
             {
                 // This case is so the same error does not get printed multiple times in a cascade.
                 returnType = "error";
@@ -291,7 +292,7 @@ namespace FlatPiler
                 returnType = "error";
                 returnValue = -1;
             }
-            return new List<Object>() { returnType, returnValue };
+            return new Tuple<string, Object>(returnType, returnValue);
         }
 
         private Boolean inCurrentScope(String id)
@@ -308,7 +309,7 @@ namespace FlatPiler
             return isNewId;
         }
 
-        private List<int> findScope(String id)
+        private Tuple<int, int> findScope(String id)
         {
             Boolean foundId = false;
             int scopeIndex = -1;
@@ -341,20 +342,21 @@ namespace FlatPiler
                     }
                 }
             }
-            return new List<int>() { scopeIndex, locationInScope };
+            return new Tuple<int, int>(scopeIndex, locationInScope);
         }
     }
 
     class ScopeNode
     {
-        public int scopeId;
-        public int parentId;
-        public List<ScopeElement> scopeMembers = new List<ScopeElement>();
+        public int scopeId { get; private set; }
+        public int parentId { get; private set; }
+        public List<ScopeElement> scopeMembers { get; private set; }
 
         public ScopeNode(int scopeId, int parentId)
         {
             this.scopeId = scopeId;
             this.parentId = parentId;
+            this.scopeMembers = new List<ScopeElement>();
         }
 
         public void addChildScope(ScopeElement childScope)
@@ -365,8 +367,8 @@ namespace FlatPiler
     }
     class ScopeElement
     {
-        public string type;
-        public string id;
+        public string type { get; private set; }
+        public string id { get; private set; }
         public Boolean isInitialized = false;
         public Boolean isUsed = false;
         public Object value = "undefined";

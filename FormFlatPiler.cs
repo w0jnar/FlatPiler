@@ -44,7 +44,7 @@ namespace FlatPiler
 
                     if (symbolTable.errorCount == 0)
                     {
-                        CodeGenerator codeGenerator = new CodeGenerator(ast.root, taOutput);
+                        CodeGenerator codeGenerator = new CodeGenerator(ast.root, symbolTable.scopes, taOutput);
                         codeGenerator.generateCode();
                     }
                 }
