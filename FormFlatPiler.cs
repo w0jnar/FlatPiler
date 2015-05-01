@@ -75,6 +75,7 @@ namespace FlatPiler
         {
             taInput.Text = "";
             taOutput.Text = "";
+            taInput.Focus();
         }
     }
 }

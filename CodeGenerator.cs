@@ -304,9 +304,14 @@ namespace FlatPiler
             {
                 exprTuple = new Tuple<string, string>("digit", generateIntExpr(exprNode));
             }
+            else if (isString.IsMatch(exprNodeName))
+            {
+                exprTuple = new Tuple<string, string>("string", allocateHeap(exprNodeName));
+            }
             else
             {
-                exprTuple = new Tuple<string, string>("digit", exprNodeName);
+                Tuple<string, string, int, int> currentTemp = getTemp(exprNodeName, this.currentScopeId);
+                exprTuple = new Tuple<string, string>(getIdInfo(exprNodeName).Item1, currentTemp.Item1);
             }
             return exprTuple;
         }
@@ -362,6 +367,87 @@ namespace FlatPiler
                 this.currentTemp = "T" + (int.Parse(this.currentTemp[1].ToString()) + 1).ToString();
             }
             this.staticData.Add(new Tuple<string, string, int, int>(this.currentTemp, tempName, this.currentScopeId, this.offset++));
+        }
+
+        private string allocateHeap(string stringToAllocate)
+        {
+            string stringWithoutQuotes = stringToAllocate.Substring(1, stringToAllocate.Length - 2);
+            Tuple<bool, int> heapCheck = existsInHeap(stringWithoutQuotes);
+            string heapLocation;
+            if (!heapCheck.Item1)
+            {
+                buildPrintMessage("--Allocating Heap Space for String " + stringWithoutQuotes + ".");
+                this.heap.Insert(0, "00");
+                List<string> stringArray = new List<string>();
+                for (int i = 0; i < stringWithoutQuotes.Length; i++)
+                {
+                    stringArray.Add(((int)stringWithoutQuotes[i]).ToString("x").ToUpper());
+                }
+                stringArray.AddRange(this.heap);
+                this.heap = stringArray;
+                this.heapPointer = this.heapPointer - stringWithoutQuotes.Length;
+                heapLocation = this.heapPointer.ToString("x").ToUpper();
+            }
+            else
+            {
+                heapLocation = heapCheck.Item2.ToString("x").ToUpper();
+            }
+            if (heapLocation.Length == 1)
+            {
+                heapLocation = "0" + heapLocation;
+            }
+            return heapLocation;
+        }
+
+        private Tuple<bool, int> existsInHeap(string stringToFind)
+        {
+            int pointer;
+            int offset = 0;
+            bool booleanCheck;
+            string stringToCheck;
+            string stringCharAsHex = ((int)stringToFind[0]).ToString("x").ToUpper();
+            Tuple<bool, int> returnTuple = new Tuple<bool, int>(false, 0);
+            for (int i = 0; i < this.heap.Count; i++)
+            {
+
+                if (stringCharAsHex == this.heap[i])
+                {
+                    pointer = this.heap.Count - i;
+                    booleanCheck = false;
+                    for (int j = 0; j < stringToFind.Length; j++)
+                    {
+                        stringCharAsHex = ((int)stringToFind[j]).ToString("x").ToUpper();
+                        if (stringCharAsHex == this.heap[i + j])
+                        {
+                            booleanCheck = true;
+                        }
+                        else
+                        {
+                            booleanCheck = false;
+                            break;
+                        }
+                    }
+                    if (booleanCheck)
+                    {
+                        stringToCheck = this.heap[i + stringToFind.Length];
+                        if (stringToCheck == "00")
+                        {
+                            returnTuple = new Tuple<bool, int>(true, (programSize - pointer + 1));
+                        }
+                    }
+                    else
+                    {
+                        // String was not found, now we must reach the next null to check the next string.
+                        offset = i;
+                        while (offset < this.heap.Count && this.heap[offset] != "00")
+                        {
+                            offset++;
+                        }
+                    }
+                    i += offset;
+                }
+            }
+            return returnTuple;
         }
 
         private Tuple<string, string, int, int> getTemp(string idName, int scope)
