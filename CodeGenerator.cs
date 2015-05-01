@@ -21,13 +21,16 @@ namespace FlatPiler
         private int currentScope = 0;
         private int currentScopeId = 0;
 
+        private static int programSize = 255;
         private List<string> generatedCode = new List<string>();
+        private List<string> heap = new List<string>();
+        private int heapPointer = programSize;
         private int tempCount = 0;
         private int offset = 0;
         private string currentTemp;
 
         private List<Tuple<string, string, int, int>> staticData = new List<Tuple<string, string, int, int>>();
-        private List<Tuple<string, int>> jumpTable = new List<Tuple<string, int>>();
+        private Dictionary<string, int> jumpTable = new Dictionary<string, int>();
 
         public CodeGenerator(Node astRoot, List<ScopeNode> scopes, TextBox taOutput)
             : base(taOutput)
@@ -48,7 +51,90 @@ namespace FlatPiler
             appendCode("00");
 
             string currentJump = "";
+            buildPrintMessage("--Backpatching Jumps.");
+            for (int i = 0; i < this.generatedCode.Count; i++)
+            {
+                if (this.generatedCode[i][0] == 'J')
+                {
+                    int jumpTableInt = this.jumpTable[this.generatedCode[i]];
+                    if (jumpTableInt.ToString("x").Length == 1)
+                    {
+                        currentJump = "0" + jumpTableInt.ToString("x").ToUpper();
+                    }
+                    else
+                    {
+                        currentJump = jumpTableInt.ToString("x").ToUpper();
+                    }
+                    this.generatedCode[i] = currentJump;
+                }
+            }
+
+            if (this.staticData.Count > 0)
+            {
+                Tuple<string, string, int, int> currentTemp;
+                Tuple<string, string> currentReplace;
+                string currentTempString;
+                buildPrintMessage("--Backpatching Temps.");
+                for (int i = 0; i < this.staticData.Count; i++)
+                {
+                    appendCode("00");
+                    currentTemp = this.staticData[i];
+                    currentTempString = currentTemp.Item1;
+                    currentReplace = convertToHexPair((this.index - 1).ToString("x"));
+
+                    for (int j = 0; j < this.generatedCode.Count; j++)
+                    {
+                        if (this.generatedCode[j] == currentTempString)
+                        {
+                            this.generatedCode[j] = currentReplace.Item1;
+                            this.generatedCode[j + 1] = currentReplace.Item2;
+                        }
+                    }
+                }
+            }
+
+            buildPrintMessage("--Checking if Code is of valid length.");
+            if ((this.generatedCode.Count + this.heap.Count) <= (programSize + 1))
+            {
+                buildPrintMessage("--Code is valid!");
+                buildPrintMessage("--Filling space with \"00\" as needed.");
+                int codeSize = this.generatedCode.Count;
+                for (int i = 0; i <= (programSize - codeSize - this.heap.Count); i++)
+                {
+                    appendCode("00");
+                }
+                buildPrintMessage("--Joining Heap to Code.");
+                this.generatedCode.AddRange(this.heap);
+                buildPrintMessage("~~~Now Ending Code Generation.");
+                buildPrintMessage("--Output Code:");
+
+                for (int i = 0; i < this.generatedCode.Count; i += 16)
+                {
+                    buildPrintMessage(this.generatedCode[i] + " "
+                        + this.generatedCode[i + 1] + " "
+                        + this.generatedCode[i + 2] + " "
+                        + this.generatedCode[i + 3] + " "
+                        + this.generatedCode[i + 4] + " "
+                        + this.generatedCode[i + 5] + " "
+                        + this.generatedCode[i + 6] + " "
+                        + this.generatedCode[i + 7] + "   "
+                        + this.generatedCode[i + 8] + " "
+                        + this.generatedCode[i + 9] + " "
+                        + this.generatedCode[i + 10] + " "
+                        + this.generatedCode[i + 11] + " "
+                        + this.generatedCode[i + 12] + " "
+                        + this.generatedCode[i + 13] + " "
+                        + this.generatedCode[i + 14] + " "
+                        + this.generatedCode[i + 15]);
+                }
+            }
+            else
+            {
+                buildPrintMessage("~~~Error: Too much code generated for the supported operation.");
+            }
+            print();
         }
+
 
         private void generateFromNode(Node currentNode)
         {
@@ -204,7 +290,7 @@ namespace FlatPiler
         {
             int tempIndex = -1;
             Tuple<string, string, int, int> currentTemp;
-            for (var i = 0; i < this.staticData.Count; i++)
+            for (int i = 0; i < this.staticData.Count; i++)
             {
                 currentTemp = this.staticData[i];
                 if (currentTemp.Item2 == idName && currentTemp.Item3 == scope)
@@ -218,7 +304,7 @@ namespace FlatPiler
                 Tuple<int, int> idLocation = findScope(idName);
                 Tuple<string, string, int, int> parentTemp = getTemp(idName, idLocation.Item1);
 
-                for (var i = 0; i < this.staticData.Count; i++)
+                for (int i = 0; i < this.staticData.Count; i++)
                 {
                     currentTemp = this.staticData[i];
                     if (currentTemp.Item2 == idName && currentTemp.Item3 == scope)
@@ -286,6 +372,17 @@ namespace FlatPiler
                 }
             }
             return isNewId;
+        }
+
+        private Tuple<string, string> convertToHexPair(string hexNum)
+        {
+            var offset = 4 - hexNum.Length;
+            for (int i = 0; i < offset; i++)
+            {
+                hexNum = "0" + hexNum;
+            }
+            hexNum = hexNum.ToUpper();
+            return new Tuple<string, string>(hexNum.Substring(2, 4), hexNum.Substring(0, 2));
         }
 
         private void appendCode(string code)
