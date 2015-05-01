@@ -20,6 +20,7 @@ namespace FlatPiler
         private int index = 0;
         private int currentScope = 0;
         private int currentScopeId = 0;
+        private List<int> lastScopeIdStack = new List<int>();
 
         private static int programSize = 255;
         private List<string> generatedCode = new List<string>();
@@ -28,6 +29,9 @@ namespace FlatPiler
         private int tempCount = 0;
         private int offset = 0;
         private string currentTemp;
+
+        private string truePointer = "";
+        private string falsePointer = "";
 
         private List<Tuple<string, string, int, int>> staticData = new List<Tuple<string, string, int, int>>();
         private Dictionary<string, int> jumpTable = new Dictionary<string, int>();
@@ -50,22 +54,25 @@ namespace FlatPiler
 
             appendCode("00");
 
-            string currentJump = "";
-            buildPrintMessage("--Backpatching Jumps.");
-            for (int i = 0; i < this.generatedCode.Count; i++)
+            if (this.jumpTable.Count > 0)
             {
-                if (this.generatedCode[i][0] == 'J')
+                string currentJump = "";
+                buildPrintMessage("--Backpatching Jumps.");
+                for (int i = 0; i < this.generatedCode.Count; i++)
                 {
-                    int jumpTableInt = this.jumpTable[this.generatedCode[i]];
-                    if (jumpTableInt.ToString("x").Length == 1)
+                    if (this.generatedCode[i][0] == 'J')
                     {
-                        currentJump = "0" + jumpTableInt.ToString("x").ToUpper();
+                        int jumpTableInt = this.jumpTable[this.generatedCode[i]];
+                        if (jumpTableInt.ToString("x").Length == 1)
+                        {
+                            currentJump = "0" + jumpTableInt.ToString("x").ToUpper();
+                        }
+                        else
+                        {
+                            currentJump = jumpTableInt.ToString("x").ToUpper();
+                        }
+                        this.generatedCode[i] = currentJump;
                     }
-                    else
-                    {
-                        currentJump = jumpTableInt.ToString("x").ToUpper();
-                    }
-                    this.generatedCode[i] = currentJump;
                 }
             }
 
@@ -148,6 +155,7 @@ namespace FlatPiler
             }
             else if (currentNodeName == "Variable Declaration")
             {
+                generateVarDecl(currentNode);
             }
             else if (currentNodeName == "While")
             {
@@ -157,6 +165,7 @@ namespace FlatPiler
             }
             else if (currentNodeName == "Statement List")
             {
+                generateBlock(currentNode);
             }
         }
 
@@ -210,9 +219,77 @@ namespace FlatPiler
                 appendCode("A2");
                 appendCode("01");
                 appendCode("FF");
-
             }
+            else
+            {
+                if (exprTuple.Item1 == "boolean" && exprTuple.Item2[0] == 'T')
+                {
+                    string tempName = "S" + this.tempCount.ToString();
+                    this.tempCount++;
+                    createTemp(tempName);
+                    appendCode("A9");
+                    appendCode("01");
+                    appendCode("8D");
+                    appendCode(this.currentTemp);
+                    appendCode("XX");
+                    appendCode("A2");
+                    appendCode("01");
+                    appendCode("EC");
+                    appendCode(exprTuple.Item2);
+                    appendCode("XX");
+                    appendCode("D0");
+                    appendCode("0C");
+                    appendCode("A0");
+                    appendCode(this.truePointer);
+                    appendCode("A2");
+                    appendCode("02");
+                    appendCode("FF");
+                    appendCode("A2");
+                    appendCode("00");
+                    appendCode("EC");
+                    appendCode(this.currentTemp);
+                    appendCode("XX");
+                    appendCode("D0");
+                    appendCode("05");
+                    appendCode("A0");
+                    appendCode(this.falsePointer);
+                    appendCode("A2");
+                    appendCode("02");
+                    appendCode("FF");
+                }
+                else
+                {
+                    appendCode("A0");
+                    appendCode(exprTuple.Item2);
+                    appendCode("A2");
+                    appendCode("02");
+                    appendCode("FF");
+                }
+            }
+        }
 
+        private void generateVarDecl(Node varDeclNode)
+        {
+            buildPrintMessage("--Generating Variable Declaration Code.");
+            createTemp(varDeclNode.children[1].name);
+            appendCode("A9");
+            appendCode("00");
+            appendCode("8D");
+            appendCode(this.currentTemp);
+            appendCode("XX");
+        }
+
+        private void generateBlock(Node statementListNode)
+        {
+            this.currentScope++;
+            this.lastScopeIdStack.Add(this.currentScopeId);
+            this.currentScopeId = this.currentScope;
+            for (int i = 0; i < statementListNode.children.Count; i++)
+            {
+                generateFromNode(statementListNode.children[i]);
+            }
+            this.currentScopeId = this.lastScopeIdStack[this.lastScopeIdStack.Count - 1];
+            this.lastScopeIdStack.RemoveAt(this.lastScopeIdStack.Count - 1);
         }
 
         private Tuple<string, string> generateExprTuple(Node exprNode)
@@ -242,7 +319,8 @@ namespace FlatPiler
             if (rightExpr.Item2[0] == 'T')
             {
                 string tempName = "S" + this.tempCount.ToString();
-                tempCount++;
+                this.tempCount++;
+                createTemp(tempName);
                 appendCode("A9");
 
                 if (int.Parse(leftExpr.Item2).ToString("x").Length == 1)
@@ -382,7 +460,7 @@ namespace FlatPiler
                 hexNum = "0" + hexNum;
             }
             hexNum = hexNum.ToUpper();
-            return new Tuple<string, string>(hexNum.Substring(2, 4), hexNum.Substring(0, 2));
+            return new Tuple<string, string>(hexNum.Substring(2, 2), hexNum.Substring(0, 2));
         }
 
         private void appendCode(string code)
