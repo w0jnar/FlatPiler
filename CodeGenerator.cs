@@ -148,10 +148,11 @@ namespace FlatPiler
             string currentNodeName = currentNode.name;
             if (currentNodeName == "Print")
             {
-                generatePrintCode(currentNode);
+                generatePrint(currentNode);
             }
             else if (currentNodeName == "Assignment")
             {
+                generateAssignment(currentNode);
             }
             else if (currentNodeName == "Variable Declaration")
             {
@@ -169,7 +170,7 @@ namespace FlatPiler
             }
         }
 
-        private void generatePrintCode(Node printNode)
+        private void generatePrint(Node printNode)
         {
             Node exprNode = printNode.children[0];
             buildPrintMessage("--Generating Print Code.");
@@ -268,6 +269,83 @@ namespace FlatPiler
             }
         }
 
+        private void generateAssignment(Node assignmentNode)
+        {
+            buildPrintMessage("--Generating Assignment Code.");
+            Node assignmentOpNode = assignmentNode.children[0];
+            Node varIdNode = assignmentOpNode.children[0];
+            Node exprNode = assignmentOpNode.children[1];
+            Tuple<string, string, int, int> currentTemp = getTemp(varIdNode.name, this.currentScopeId);
+            Tuple<string, string> exprTuple = generateExprTuple(exprNode);
+            string exprValue = exprTuple.Item2;
+            string exprType = exprTuple.Item1;
+
+            if (isString.IsMatch(exprValue))
+            {
+                exprValue = allocateHeap(exprValue);
+            }
+
+            if (exprValue.Length == 1)
+            {
+                exprValue = "0" + exprValue;
+            }
+
+            if (exprValue[0] != 'T')
+            {
+                appendCode("A9");
+                appendCode(exprValue);
+                appendCode("8D");
+                appendCode(currentTemp.Item1);
+                appendCode("XX");
+            }
+            else if ((exprValue[0] == 'T' && exprType != "boolean"))
+            {
+                appendCode("AD");
+                appendCode(exprValue);
+                appendCode("XX");
+                appendCode("8D");
+                appendCode(currentTemp.Item1);
+                appendCode("XX");
+            }
+            else 
+            {
+                string tempName = "S" + this.tempCount.ToString();
+                this.tempCount++;
+                createTemp(tempName);
+
+                appendCode("A9");
+                appendCode("01");
+                appendCode("8D");
+                appendCode(this.currentTemp);
+                appendCode("XX");
+                appendCode("A2");
+                appendCode("01");
+                appendCode("EC");
+                appendCode(exprValue);
+                appendCode("XX");
+                appendCode("D0");
+                appendCode("0C");
+                appendCode("A9");
+                appendCode(this.falsePointer);
+                appendCode("8D");
+                appendCode(currentTemp.Item1);
+                appendCode("XX");
+                appendCode("A2");
+                appendCode("00");
+                appendCode("EC");
+                appendCode(this.currentTemp);
+                appendCode("XX");
+                appendCode("D0");
+                appendCode("05");
+                appendCode("A9");
+                appendCode(this.truePointer);
+                appendCode("8D");
+                appendCode(currentTemp.Item1);
+                appendCode("XX");
+
+            }
+        }
+
         private void generateVarDecl(Node varDeclNode)
         {
             buildPrintMessage("--Generating Variable Declaration Code.");
@@ -307,6 +385,10 @@ namespace FlatPiler
             else if (isString.IsMatch(exprNodeName))
             {
                 exprTuple = new Tuple<string, string>("string", allocateHeap(exprNodeName));
+            }
+            else if (exprNodeName == "==" || exprNodeName == "!=" || exprNodeName == "false" || exprNodeName == "true")
+            {
+                exprTuple = new Tuple<string, string>("boolean", generateBooleanExpr(exprNode));
             }
             else
             {
@@ -353,6 +435,224 @@ namespace FlatPiler
             }
 
             return exprString;
+        }
+
+        private string generateBooleanExpr(Node boolExprNode)
+        {
+            string currentNodeName = boolExprNode.name;
+            string booleanPointer;
+            if (this.truePointer == "")
+            {
+                this.truePointer = allocateHeap("\"true\"");
+                this.falsePointer = allocateHeap("\"false\"");
+            }
+
+            if (currentNodeName == "true" || currentNodeName == "false")
+            {
+                string boolString = "\"" + currentNodeName + "\"";
+                booleanPointer = allocateHeap(boolString);
+            }
+            else
+            {
+                Tuple<string, string> leftExpr = generateExprTuple(boolExprNode.children[0]);
+                Tuple<string, string> rightExpr = generateExprTuple(boolExprNode.children[1]);
+                string leftType = leftExpr.Item1;
+                string leftValue = rightExpr.Item2;
+                string rightType = leftExpr.Item1;
+                string rightValue = rightExpr.Item2;
+                if (isString.IsMatch(leftValue))
+                {
+                    leftValue = allocateHeap(leftValue);
+                }
+                if (isString.IsMatch(rightValue))
+                {
+                    rightValue = allocateHeap(rightValue);
+                }
+
+                if (leftValue[0] == 'T' || rightValue[0] == 'T')
+                {
+                    if (leftValue.Length == 1)
+                    {
+                        leftValue = "0" + leftValue;
+                    }
+                    if (rightValue.Length == 1)
+                    {
+                        rightValue = "0" + rightValue;
+                    }
+                    // Left side to X reg.
+                    if (leftValue[0] == 'T' && leftType == "boolean")
+                    {
+                        appendCode("A2");
+                        appendCode("01");
+                        appendCode("EC");
+                        appendCode(leftValue);
+                        appendCode("XX");
+                        appendCode("D0");
+                        appendCode("09");
+                        appendCode("A2");
+                        appendCode("01");
+                        appendCode("EC");
+                        appendCode(leftValue);
+                        appendCode("XX");
+                        appendCode("D0");
+                        appendCode("02");
+                        appendCode("A2");
+                        appendCode(this.falsePointer);
+                    }
+                    else if (leftValue[0] == 'T')
+                    {
+                        appendCode("AE");
+                        appendCode(leftValue);
+                        appendCode("XX");
+                    }
+                    else
+                    {
+                        appendCode("A2");
+                        appendCode(leftValue);
+                    }
+
+                    // Create a temp for right side.
+                    string tempName = "S" + this.tempCount.ToString();
+                    this.tempCount++;
+                    createTemp(tempName);
+                    // Right side need to end up in memory.
+                    if (rightValue[0] == 'T' && rightType == "boolean")
+                    {
+                        appendCode("AD");
+                        appendCode(rightValue);
+                        appendCode("XX");
+                        appendCode("8D");
+                        appendCode(this.currentTemp);
+                        appendCode("XX");
+
+
+                        appendCode("A2");
+                        appendCode("01");
+                        appendCode("EC");
+                        appendCode(rightValue);
+                        appendCode("XX");
+                        appendCode("D0");
+                        appendCode("0C");
+                        appendCode("A9");
+                        appendCode(this.truePointer);
+                        appendCode("8D");
+                        appendCode(this.currentTemp);
+                        appendCode("XX");
+                        appendCode("A2");
+                        appendCode("01");
+                        appendCode("EC");
+                        appendCode(rightValue);
+                        appendCode("XX");
+                        appendCode("D0");
+                        appendCode("05");
+                        appendCode("A9");
+                        appendCode(this.falsePointer);
+                        appendCode("8D");
+                        appendCode(this.currentTemp);
+                        appendCode("XX");
+
+                    }
+                    else if (rightValue[0] == 'T')
+                    {
+                        appendCode("AD");
+                        appendCode(rightValue);
+                        appendCode("XX");
+                        appendCode("8D");
+                        appendCode(this.currentTemp);
+                        appendCode("XX");
+                    }
+                    else
+                    {
+                        appendCode("A9");
+                        appendCode(rightValue);
+                        appendCode("8D");
+                        appendCode(this.currentTemp);
+                        appendCode("XX");
+                    }
+
+                    appendCode("EC");
+                    appendCode(this.currentTemp);
+                    appendCode("XX");
+
+                    string tempName2 = "S" + this.tempCount.ToString();
+                    this.tempCount++;
+                    createTemp(tempName2);
+                    if (currentNodeName == "==")
+                    {
+                        appendCode("D0");
+                        appendCode("0C");
+                        appendCode("A2");
+                        appendCode("00");
+                        appendCode("A9");
+                        appendCode("01");
+                        appendCode("8D");
+                        appendCode(this.currentTemp);
+                        appendCode("XX");
+                        appendCode("EC");
+                        appendCode(this.currentTemp);
+                        appendCode("XX");
+                        appendCode("D0");
+                        appendCode("07");
+                        appendCode("A2");
+                        appendCode("00");
+                        appendCode("A9");
+                        appendCode("00");
+                        appendCode("8D");
+                        appendCode(this.currentTemp);
+                        appendCode("XX");
+                    }
+                    else
+                    {
+                        appendCode("D0");
+                        appendCode("0C");
+                        appendCode("A2");
+                        appendCode("01");
+                        appendCode("A9");
+                        appendCode("00");
+                        appendCode("8D");
+                        appendCode(this.currentTemp);
+                        appendCode("XX");
+                        appendCode("EC");
+                        appendCode(this.currentTemp);
+                        appendCode("XX");
+                        appendCode("D0");
+                        appendCode("07");
+                        appendCode("A2");
+                        appendCode("00");
+                        appendCode("A9");
+                        appendCode("01");
+                        appendCode("8D");
+                        appendCode(this.currentTemp);
+                        appendCode("XX");
+                    }
+                    booleanPointer = this.currentTemp;
+                }
+                else //static as there are no variables involved
+                {
+                    if (leftValue == rightValue && currentNodeName == "==")
+                    {
+                        booleanPointer = this.truePointer;
+                    }
+                    else if (leftValue != rightValue && currentNodeName == "==")
+                    {
+                        booleanPointer = this.falsePointer;
+                    }
+                    else if (leftValue == rightValue && currentNodeName == "!=")
+                    {
+                        booleanPointer = this.falsePointer;
+                    }
+                    else if (leftValue != rightValue && currentNodeName == "!=")
+                    {
+                        booleanPointer = this.truePointer;
+                    }
+                    else
+                    {
+                        // This case will never be reached, but the verboseness of the cases above felt necessary.
+                        booleanPointer = "";
+                    }
+                }
+            }
+            return booleanPointer;
         }
 
         private void createTemp(string tempName)
@@ -471,7 +771,7 @@ namespace FlatPiler
                 for (int i = 0; i < this.staticData.Count; i++)
                 {
                     currentTemp = this.staticData[i];
-                    if (currentTemp.Item2 == idName && currentTemp.Item3 == scope)
+                    if (currentTemp.Item2 == idName && currentTemp.Item3 == idLocation.Item1)
                     {
                         tempIndex = i;
                         break;
