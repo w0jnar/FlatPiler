@@ -29,6 +29,7 @@ namespace FlatPiler
         private int tempCount = 0;
         private int offset = 0;
         private string currentTemp;
+        private int currentJumpCount = 0;
 
         private string truePointer = "";
         private string falsePointer = "";
@@ -160,9 +161,11 @@ namespace FlatPiler
             }
             else if (currentNodeName == "While")
             {
+                generateWhile(currentNode);
             }
             else if (currentNodeName == "If")
             {
+                generateIf(currentNode);
             }
             else if (currentNodeName == "Statement List")
             {
@@ -241,7 +244,7 @@ namespace FlatPiler
                     appendCode("D0");
                     appendCode("0C");
                     appendCode("A0");
-                    appendCode(this.truePointer);
+                    appendCode(this.falsePointer);
                     appendCode("A2");
                     appendCode("02");
                     appendCode("FF");
@@ -253,7 +256,7 @@ namespace FlatPiler
                     appendCode("D0");
                     appendCode("05");
                     appendCode("A0");
-                    appendCode(this.falsePointer);
+                    appendCode(this.truePointer);
                     appendCode("A2");
                     appendCode("02");
                     appendCode("FF");
@@ -307,7 +310,7 @@ namespace FlatPiler
                 appendCode(currentTemp.Item1);
                 appendCode("XX");
             }
-            else 
+            else
             {
                 string tempName = "S" + this.tempCount.ToString();
                 this.tempCount++;
@@ -355,6 +358,169 @@ namespace FlatPiler
             appendCode("8D");
             appendCode(this.currentTemp);
             appendCode("XX");
+        }
+
+        private void generateWhile(Node whileNode)
+        {
+            buildPrintMessage("--Generating While Statement Code.");
+            int whileIndex = this.index;
+            string booleanString = generateBooleanExpr(whileNode.children[0]);
+            string tempName = "S" + this.tempCount.ToString();
+            this.tempCount++;
+            createTemp(tempName);
+
+            if (booleanString[0] == 'T')
+            {
+                appendCode("A9");
+                appendCode("00");
+                appendCode("8D");
+                appendCode(this.currentTemp);
+                appendCode("XX");
+                appendCode("A2");
+                appendCode("01");
+                appendCode("EC");
+                appendCode(booleanString);
+                appendCode("XX");
+                appendCode("D0");
+                appendCode("0C");
+                appendCode("A9");
+                appendCode(this.truePointer);
+                appendCode("8D");
+                appendCode(this.currentTemp);
+                appendCode("XX");
+                appendCode("A2");
+                appendCode("00");
+                appendCode("EC");
+                appendCode(this.currentTemp);
+                appendCode("XX");
+                appendCode("D0");
+                appendCode("05");
+                appendCode("A9");
+                appendCode(this.falsePointer);
+                appendCode("8D");
+                appendCode(this.currentTemp);
+                appendCode("XX");
+
+                appendCode("A2");
+                appendCode(this.falsePointer);
+
+            }
+            else
+            {
+                appendCode("A9");
+                appendCode(this.truePointer);
+                appendCode("8D");
+                appendCode(this.currentTemp);
+                appendCode("XX");
+
+                appendCode("A2");
+                appendCode(booleanString);
+            }
+            appendCode("EC");
+            appendCode(this.currentTemp);
+            appendCode("XX");
+            appendCode("D0");
+            string jumpName = "J" + this.currentJumpCount.ToString();
+            this.currentJumpCount++;
+            appendCode(jumpName);
+
+            int currentIndex = this.index;
+
+            generateBlock(whileNode.children[1]);
+
+
+            string whileTempName = "S" + this.tempCount.ToString();
+            this.tempCount++;
+            createTemp(whileTempName);
+            appendCode("A9");
+            appendCode("01");
+            appendCode("8D");
+            appendCode(this.currentTemp);
+            appendCode("XX");
+
+            appendCode("A2");
+            appendCode("00");
+            appendCode("EC");
+            appendCode(this.currentTemp);
+            appendCode("XX");
+            appendCode("D0");
+            string whileJumpName = "J" + this.currentJumpCount.ToString();
+            this.currentJumpCount++;
+            appendCode(whileJumpName);
+            whileIndex = (programSize - (this.index - whileIndex)) + 1;
+            this.jumpTable.Add(whileJumpName, whileIndex);
+
+            currentIndex = this.index - currentIndex;
+            this.jumpTable.Add(jumpName, currentIndex);
+        }
+
+        private void generateIf(Node ifNode)
+        {
+            buildPrintMessage("--Generating If Statement Code.");
+            string booleanExpression = generateBooleanExpr(ifNode.children[0]);
+
+            string tempName = "S" + this.tempCount.ToString();
+            this.tempCount++;
+            createTemp(tempName);
+            if (booleanExpression[0] == 'T')
+            {
+                appendCode("A9");
+                appendCode("01");
+                appendCode("8D");
+                appendCode(this.currentTemp);
+                appendCode("XX");
+                appendCode("A2");
+                appendCode("01");
+                appendCode("EC");
+                appendCode(booleanExpression);
+                appendCode("XX");
+                appendCode("D0");
+                appendCode("0C");
+                appendCode("A9");
+                appendCode(this.falsePointer);
+                appendCode("8D");
+                appendCode(this.currentTemp);
+                appendCode("XX");
+                appendCode("A2");
+                appendCode("00");
+                appendCode("EC");
+                appendCode(this.currentTemp);
+                appendCode("XX");
+                appendCode("D0");
+                appendCode("05");
+                appendCode("A9");
+                appendCode(this.truePointer);
+                appendCode("8D");
+                appendCode(this.currentTemp);
+                appendCode("XX");
+
+                appendCode("A2");
+                appendCode(this.falsePointer);
+            }
+            else
+            {
+                appendCode("A9");
+                appendCode(this.truePointer);
+                appendCode("8D");
+                appendCode(this.currentTemp);
+                appendCode("XX");
+                appendCode("A2");
+                appendCode(booleanExpression);
+            }
+            appendCode("EC");
+            appendCode(this.currentTemp);
+            appendCode("XX");
+            appendCode("D0");
+            string jumpName = "J" + this.currentJumpCount.ToString();
+            this.currentJumpCount++;
+            appendCode(jumpName);
+
+            int currentIndex = this.index;
+
+            generateBlock(ifNode.children[1]);
+
+            currentIndex = this.index - currentIndex;
+            this.jumpTable.Add(jumpName, currentIndex);
         }
 
         private void generateBlock(Node statementListNode)
@@ -457,8 +623,8 @@ namespace FlatPiler
                 Tuple<string, string> leftExpr = generateExprTuple(boolExprNode.children[0]);
                 Tuple<string, string> rightExpr = generateExprTuple(boolExprNode.children[1]);
                 string leftType = leftExpr.Item1;
-                string leftValue = rightExpr.Item2;
-                string rightType = leftExpr.Item1;
+                string leftValue = leftExpr.Item2;
+                string rightType = rightExpr.Item1;
                 string rightValue = rightExpr.Item2;
                 if (isString.IsMatch(leftValue))
                 {
@@ -515,7 +681,7 @@ namespace FlatPiler
                     string tempName = "S" + this.tempCount.ToString();
                     this.tempCount++;
                     createTemp(tempName);
-                    // Right side need to end up in memory.
+                    // Right side needs to end up in memory.
                     if (rightValue[0] == 'T' && rightType == "boolean")
                     {
                         appendCode("AD");
@@ -577,7 +743,7 @@ namespace FlatPiler
                     string tempName2 = "S" + this.tempCount.ToString();
                     this.tempCount++;
                     createTemp(tempName2);
-                    if (currentNodeName == "==")
+                    if (currentNodeName == "!=")
                     {
                         appendCode("D0");
                         appendCode("0C");
@@ -627,7 +793,7 @@ namespace FlatPiler
                     }
                     booleanPointer = this.currentTemp;
                 }
-                else //static as there are no variables involved
+                else // Static, as there are no variables involved.
                 {
                     if (leftValue == rightValue && currentNodeName == "==")
                     {
@@ -687,6 +853,7 @@ namespace FlatPiler
                 this.heap = stringArray;
                 this.heapPointer = this.heapPointer - stringWithoutQuotes.Length;
                 heapLocation = this.heapPointer.ToString("x").ToUpper();
+                this.heapPointer--;
             }
             else
             {
